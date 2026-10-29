@@ -1,71 +1,48 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
+
+    // Helper functions for authentication and strict per-user ownership
     function isSignedIn() {
       return request.auth != null;
     }
-    
+
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    function isAdmin() {
-      return isSignedIn() && (
-        request.auth.token.email == 'sabermuttaqin@gmail.com' ||
-        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
-        request.auth.uid == 'admin_snowprince'
-      );
-    }
-
-    // Admins registry
-    match /admins/{adminId} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin();
-    }
-
-    // User profiles
-    match /users/{userId} {
-      allow read: if isSignedIn();
-      allow create, update: if isOwner(userId) || isAdmin();
-      allow delete: if isAdmin();
-
-      // User bookmarks (private per-user data)
-      match /bookmarks/{bookmarkId} {
-        allow read, write: if isOwner(userId) || isAdmin();
-      }
-    }
-
-    // Academic Discussions
-    match /discussions/{discussionId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
-      
-      // Update allowed for author (content/title) or any signed-in user (incrementing likesCount) or admin
-      allow update: if isSignedIn() && (
-        isAdmin() || 
-        resource.data.authorId == request.auth.uid ||
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likesCount', 'repliesCount', 'isResolved', 'isPinned'])
-      );
-      
-      allow delete: if isSignedIn() && (resource.data.authorId == request.auth.uid || isAdmin());
-
-      // Replies inside discussions
-      match /replies/{replyId} {
-        allow read: if isSignedIn();
-        allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
-        allow update: if isSignedIn() && (
-          isAdmin() ||
-          resource.data.authorId == request.auth.uid ||
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likesCount', 'isEndorsed'])
-        );
-        allow delete: if isSignedIn() && (resource.data.authorId == request.auth.uid || isAdmin());
-      }
-    }
-
-    // Default fallback
+    // Default deny all access
     match /{document=**} {
       allow read, write: if false;
+    }
+
+    // User profile and all personal nested data (bookmarks, drafts, activity, private notes)
+    // Strict isolation: each user can ONLY read and write their own data
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+
+      match /{subcollection=**} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // Discussions authored by the user:
+    // Only the author can create, read, update, and delete their own discussion documents
+    match /discussions/{discussionId} {
+      allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
+      allow read, update, delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
+
+      // Replies / comments inside discussions:
+      // Only the author can create, read, update, and delete their own replies
+      match /replies/{replyId} {
+        allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
+        allow read, update, delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
+      }
+    }
+
+    // Direct per-user collections fallback (e.g., user_data/{userId}/...)
+    match /user_data/{userId}/{document=**} {
+      allow read, write: if isOwner(userId);
     }
   }
 }

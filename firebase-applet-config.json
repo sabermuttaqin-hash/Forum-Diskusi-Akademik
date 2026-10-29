@@ -1,12 +1,9 @@
 {
-  "projectId": "protean-ray-tc70r",
-  "appId": "1:193133809273:web:388bfe2548ab20a335cea8",
-  "apiKey": "AIzaSyCDITkGrKG01lHVsRH1C15mFP0_GemDvwQ",
-  "authDomain": "protean-ray-tc70r.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-5e4beafa-6ac6-4e07-bf29-aff8b0e8c79c",
-  "storageBucket": "protean-ray-tc70r.firebasestorage.app",
-  "messagingSenderId": "193133809273",
-  "measurementId": "",
-  "oAuthClientId": "193133809273-opo1i08ff7o4r75vs347stc2lvmlj7e2.apps.googleusercontent.com",
-  "recaptchaSiteKey": ""
+  "projectId": "forum-diskusi-akademik",
+  "appId": "1:92883903571:web:a1e03df1ca15b3b0d692a6",
+  "apiKey": "AIzaSyAh6UzC2chp8uJyRFEPm288KHuv1WCTp8E",
+  "authDomain": "forum-diskusi-akademik.firebaseapp.com",
+  "storageBucket": "forum-diskusi-akademik.firebasestorage.app",
+  "messagingSenderId": "92883903571",
+  "measurementId": ""
 }
