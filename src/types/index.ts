@@ -108,6 +108,11 @@ export interface ExpeditionTopic {
     joinedAt: string;
   }>;
   teamWorksheet?: string;
+  studyGuide?: string;
+  learningObjectives?: string[];
+  subTopics?: string[];
+  discussionPrompts?: string[];
+  readings?: Array<{ title: string; source: string; notes?: string }>;
 }
 
 export interface ClashBulletChat {

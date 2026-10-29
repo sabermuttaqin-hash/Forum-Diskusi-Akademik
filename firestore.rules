@@ -44,5 +44,16 @@ service cloud.firestore {
     match /user_data/{userId}/{document=**} {
       allow read, write: if isOwner(userId);
     }
+
+    // Course Rooms (Ruang Kelas Google Classroom & Hybrid Scenarios)
+    match /rooms/{roomId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn();
+
+      match /{subcollection=**} {
+        allow read, write: if isSignedIn();
+      }
+    }
   }
 }

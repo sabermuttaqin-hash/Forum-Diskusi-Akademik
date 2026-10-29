@@ -81,7 +81,7 @@ export const INITIAL_SEED_ROOMS: CourseRoom[] = [
         {
           id: 'topic_1',
           title: 'Tema 1: Framing Politik Media & Bias Algoritma Informasi',
-          description: 'Menganalisis bagaimana headline media digital membingkai persepsi publik menggunakan model kognisi sosial.',
+          description: 'Menganalisis bagaimana headline media digital membingkai persepsi publik menggunakan model kognisi sosial Teun van Dijk.',
           physicalZone: 'Meja 1 (Zona Fisik Depan Kiri)',
           maxQuota: 8,
           offlineQuota: 4,
@@ -90,12 +90,33 @@ export const INITIAL_SEED_ROOMS: CourseRoom[] = [
             { userId: 'user_student_1', userName: 'Nadia Salsabila', attendance: 'offline', joinedAt: '2026-10-29T01:00:00.000Z' },
             { userId: 'user_student_2', userName: 'Bagas Aditya', attendance: 'online', joinedAt: '2026-10-29T01:05:00.000Z' },
           ],
-          teamWorksheet: 'Peta Konsep: Ditemukan framing asimetris pada pemberitaan subsidi energi dengan penekanan pada diksi krisis.'
+          teamWorksheet: 'Peta Konsep: Ditemukan framing asimetris pada pemberitaan subsidi energi dengan penekanan pada diksi krisis.',
+          studyGuide: 'Kajian framing wacana meneliti bagaimana media memilih aspek-aspek tertentu dari suatu realitas dan membuatnya lebih menonjol dalam teks komunikasi. Dalam ekosistem digital saat ini, algoritma kurasi konten berbasis engagement memicu "echo chambers" dan amplifikasi sentimen polaritatif. Model kognisi sosial Teun van Dijk menjembatani teks linguistik makro/mikro dengan skemata mental pembaca.',
+          learningObjectives: [
+            'Membedah struktur tematik, skematik, semantik, sintaksis, dan retoris teks berita politik.',
+            'Mengidentifikasi bias algoritma rekomendasi berita dan dampaknya pada persepsi pemilih muda.',
+            'Menyusun peta konsep komparatif antara media arus utama dan portal agregator media sosial.'
+          ],
+          subTopics: [
+            '1. Dimensi Teks Mikro: Pemilihan leksikon emosional dan nominalisasi kata kerja.',
+            '2. Dimensi Kognisi Sosial: Konstruksi model mental wartawan dan editor.',
+            '3. Dimensi Konteks Sosial: Kepemilikan konglomerasi media dan pengaruh politik lokal.'
+          ],
+          discussionPrompts: [
+            'Bagaimana diksi yang dipilih pada judul berita clickbait memanipulasi kognisi awal pembaca sebelum mereka membaca artikel lengkap?',
+            'Apakah algoritma media sosial secara netral mendistribusikan berita, atau secara inheren menguntungkan framing bernada konflik?',
+            'Apa strategi counter-discourse yang efektif untuk mengedukasi masyarakat terhadap bias framing media?'
+          ],
+          readings: [
+            { title: 'News Analysis: Case Studies of International and National News in the Press', source: 'Teun A. van Dijk (Routledge)' },
+            { title: 'The Filter Bubble: What the Internet Is Hiding from You', source: 'Eli Pariser (Penguin Books)' },
+            { title: 'Framing Analysis: An Approach to Discourse Analysis', source: 'Zhongdang Pan & Gerald M. Kosicki' }
+          ]
         },
         {
           id: 'topic_2',
           title: 'Tema 2: Bahasa Inklusif & Representasi Gender dalam Wacana Publik',
-          description: 'Eksplorasi penggunaan gender-neutral phrasing dan dekonstruksi stereotip linguistik.',
+          description: 'Eksplorasi penggunaan gender-neutral phrasing dan dekonstruksi stereotip linguistik dalam regulasi institusi.',
           physicalZone: 'Meja 2 (Zona Fisik Depan Kanan)',
           maxQuota: 8,
           offlineQuota: 4,
@@ -103,7 +124,28 @@ export const INITIAL_SEED_ROOMS: CourseRoom[] = [
           selectedMembers: [
             { userId: 'user_student_3', userName: 'Farhan Maulana', attendance: 'offline', joinedAt: '2026-10-29T01:10:00.000Z' },
           ],
-          teamWorksheet: 'Draft: Inventarisasi 25 leksikon yang mengalami peyorasi gender dalam pidato kebijakan.'
+          teamWorksheet: 'Draft: Inventarisasi 25 leksikon yang mengalami peyorasi gender dalam pidato kebijakan.',
+          studyGuide: 'Bahasa bukan sekadar cerminan realitas, melainkan instrumen pembentuk relasi kuasa. Analisis Wacana Kritis Feminis (Feminist CDA) karya Michelle Lazar menunjukkan bagaimana relasi gender yang tidak setara dinaturalisasi melalui pilihan kata formal, formulir birokrasi, dan stereotip maskulinitas hegemonik di ruang publik.',
+          learningObjectives: [
+            'Mengidentifikasi bias gender tersembunyi (androcentric bias) dalam dokumen hukum dan tata tertib kampus.',
+            'Menganalisis proses asimetri leksikal dan peyorasi kata sifat yang dilekatkan pada gender tertentu.',
+            'Merumuskan pedoman panduan bahasa inklusif praktis untuk komunikasi akademik.'
+          ],
+          subTopics: [
+            '1. Asimetri Leksikal: Pembedaan sebutan status perkawinan dalam administrasi resmi.',
+            '2. Metafora Domestikasi: Cara media massa melabeli pemimpin perempuan vs pemimpin laki-laki.',
+            '3. Rekayasa Kebijakan: Standardisasi terminologi non-diskriminatif dalam panduan penulisan ilmiah.'
+          ],
+          discussionPrompts: [
+            'Sejauh mana tata bahasa Indonesia yang bersifat non-grammatical gender tetap menyimpan bias patriarkis dalam tataran semantik budaya?',
+            'Bagaimana respons institusi pendidikan terhadap usulan standarisasi gaya selingkung bahasa inklusif?',
+            'Apa peran representasi wacana dalam memecahkan stereotip peran profesional di dunia sains dan teknik?'
+          ],
+          readings: [
+            { title: 'Feminist Critical Discourse Analysis: Gender, Power and Ideology in Discourse', source: 'Michelle M. Lazar (Palgrave Macmillan)' },
+            { title: 'Language and Woman\'s Place: Text and Commentary', source: 'Robin Lakoff' },
+            { title: 'Gender and Discourse', source: 'Ruth Wodak' }
+          ]
         },
         {
           id: 'topic_3',
@@ -114,6 +156,27 @@ export const INITIAL_SEED_ROOMS: CourseRoom[] = [
           offlineQuota: 4,
           onlineQuota: 4,
           selectedMembers: [],
+          studyGuide: 'Fenomena alih kode (code-switching) dan campur kode (code-mixing) antara Bahasa Indonesia dan Bahasa Inggris di kalangan Generasi Z mencerminkan negosiasi identitas sosial kosmopolitan. Menurut teori sosiolinguistik Shana Poplack dan Carol Myers-Scotton, fenomena ini tidak menandakan dekadensi bahasa, melainkan penguasaan kompetensi komunikatif ganda yang adaptif terhadap globalisasi.',
+          learningObjectives: [
+            'Membedakan batasan linguistik antara tag-switching, inter-sentential, dan intra-sentential switching.',
+            'Menganalisis motivasi psikososial di balik pemilihan varian bahasa gaul perkotaan di platform digital.',
+            'Mengevaluasi batas kelayakan alih kode dalam konteks forum akademik dan presentasi ilmiah.'
+          ],
+          subTopics: [
+            '1. Matrix Language Frame Model: Struktur gramatikal dominan dalam kalimat campur kode.',
+            '2. Prestige Markers: Nilai simbolik kata serapan populer dalam konstruksi citra diri digital.',
+            '3. Kebijakan Bahasa Nasional: Dialektika antara pemeliharaan bahasa baku dan kedinamisan bahasa lisan.'
+          ],
+          discussionPrompts: [
+            'Apakah fenomena alih kode mengancam kosakata baku Bahasa Indonesia atau memperkaya inventaris leksikal baru?',
+            'Mengapa istilah emosi dan psikologi (misal: "overthinking", "burnout", "triggering") lebih sering diungkapkan dalam Bahasa Inggris?',
+            'Bagaimana cara dosen/guru memfasilitasi diskusi yang luwes tanpa mengabaikan kaidah ketepatan ragam ilmiah?'
+          ],
+          readings: [
+            { title: 'Duelling Languages: Grammatical Structure in Codeswitching', source: 'Carol Myers-Scotton (Oxford University Press)' },
+            { title: 'Sociolinguistic Patterns', source: 'William Labov' },
+            { title: 'Bilingualism and Code-Switching', source: 'Shana Poplack' }
+          ]
         },
         {
           id: 'topic_4',
@@ -124,6 +187,27 @@ export const INITIAL_SEED_ROOMS: CourseRoom[] = [
           offlineQuota: 4,
           onlineQuota: 4,
           selectedMembers: [],
+          studyGuide: 'Dalam situasi krisis organisasi atau bencana alam, korporasi dan pembuat kebijakan menggunakan piranti retoris berupa eufemisme, bentuk kalimat pasif (agent-deletion), dan metafora mitigatif untuk meredam kemarahan publik. Kajian ini membongkar bagaimana pilihan gramatikal menyamarkan tanggung jawab kausalitas.',
+          learningObjectives: [
+            'Mendeteksi eufemisme manipulatif (doublespeak) dalam rilis pers resmi mitigasi krisis.',
+            'Menganalisis efek penghilangan subjek pelaku (agentless passive) dalam laporan insiden.',
+            'Merancang strategi komunikasi krisis yang etis, transparan, dan dapat dipertanggungjawabkan.'
+          ],
+          subTopics: [
+            '1. Taxonomy of Euphemisms: Penghalusan istilah risiko finansial dan kegagalan sistem.',
+            '2. Agen Penghilang: Analisis klausa pasif yang meniadakan aktor penanggung jawab.',
+            '3. Retorika Apologia: Analisis taktik permintaan maaf simbolik versus kompensasi substantif.'
+          ],
+          discussionPrompts: [
+            'Di mana batas etis antara eufemisme demi menjaga ketenangan masyarakat dan penyesatan informasi?',
+            'Bagaimana media publik membongkar eufemisme yang dirancang oleh juru bicara pemerintah?',
+            'Apa dampak jangka panjang penggunaan bahasa manipulatif terhadap tingkat kepercayaan (public trust)?'
+          ],
+          readings: [
+            { title: 'Discourse and Manipulation', source: 'Teun A. van Dijk' },
+            { title: 'Doublespeak: From "Revenue Enhancement" to "Terminal Living"', source: 'William Lutz' },
+            { title: 'Crisis Communications: A Casebook Approach', source: 'Kathleen Fearn-Banks' }
+          ]
         },
         {
           id: 'topic_5',
@@ -134,6 +218,27 @@ export const INITIAL_SEED_ROOMS: CourseRoom[] = [
           offlineQuota: 4,
           onlineQuota: 4,
           selectedMembers: [],
+          studyGuide: 'Ekolinguistik (Ecolinguistics) yang dipelopori Arran Stibbe menelaah bagaimana struktur bahasa memperkuat narasi eksploitasi antroposentris terhadap alam. Topik ini membedah klaim "greenwashing", framing karbon netral, dan metafora ekonomi yang memperlakukan ekosistem biosfer semata-mata sebagai komoditas sumber daya.',
+          learningObjectives: [
+            'Menganalisis "stories-we-live-by" dalam narasi keberlanjutan korporat energi dan manufaktur.',
+            'Mengidentifikasi jurang semantik antara slogan ramah lingkungan dan aksi emisi riil.',
+            'Mengembangkan kerangka bahasa ekologis (ecocentric discourse) yang memanusiakan alam.'
+          ],
+          subTopics: [
+            '1. Greenwashing Framing: Analisis visual dan teks label "eco-friendly" dan "biodegradable".',
+            '2. Nominalisasi Alam: Perubahan alam hidup menjadi abstraksi numerik karbon kredit.',
+            '3. Komunikasi Iklim Efektif: Merancang narasi sains iklim yang menggugah aksi kolektif tanpa menimbulkan keputusasaan.'
+          ],
+          discussionPrompts: [
+            'Mengapa laporan tahunan keberlanjutan (ESG reports) sering kali menggunakan istilah-istilah yang mengaburkan dampak ekologis riil?',
+            'Bagaimana istilah "antropogenik" dikomunikasikan kepada masyarakat umum agar terbangun kesadaran lingkungan?',
+            'Apa peran linguis dalam mendukung advokasi hukum hak-hak alam dan keadilan iklim?'
+          ],
+          readings: [
+            { title: 'Ecolinguistics: Language, Ecology and the Stories We Live By', source: 'Arran Stibbe (Routledge)' },
+            { title: 'The Ecolinguistics Reader: Language, Ecology and Environment', source: 'Alwin Fill & Peter Mühlhäusler' },
+            { title: 'Green Communication and the Ecological Crisis', source: 'Richard Maxwell' }
+          ]
         }
       ]
     },
@@ -554,6 +659,72 @@ export const roomsService = {
     try {
       updateDoc(doc(db, 'rooms', roomId), { materials: rooms[rIdx].materials }).catch(() => {});
     } catch {}
+  },
+
+  updateRoom(roomId: string, data: Partial<CourseRoom>): CourseRoom | undefined {
+    const rooms = this.getRooms();
+    const idx = rooms.findIndex(r => r.id === roomId);
+    if (idx === -1) return undefined;
+
+    rooms[idx] = {
+      ...rooms[idx],
+      ...data
+    };
+    this.saveRooms(rooms);
+
+    try {
+      updateDoc(doc(db, 'rooms', roomId), data).catch(() => {});
+    } catch {}
+    return rooms[idx];
+  },
+
+  cancelTopicSelection(roomId: string, userId: string) {
+    const rooms = this.getRooms();
+    const rIdx = rooms.findIndex(r => r.id === roomId);
+    if (rIdx === -1) return;
+
+    const scenario = { ...rooms[rIdx].scenarioData };
+    if (scenario.expeditionTopics) {
+      scenario.expeditionTopics = scenario.expeditionTopics.map(t => ({
+        ...t,
+        selectedMembers: t.selectedMembers.filter(m => m.userId !== userId)
+      }));
+    }
+    if (scenario.clashProMembers) {
+      scenario.clashProMembers = scenario.clashProMembers.filter(m => m.userId !== userId);
+    }
+    if (scenario.clashContraMembers) {
+      scenario.clashContraMembers = scenario.clashContraMembers.filter(m => m.userId !== userId);
+    }
+    if (scenario.buzzStations) {
+      scenario.buzzStations = scenario.buzzStations.map(s => ({
+        ...s,
+        members: s.members.filter(m => m.userId !== userId)
+      }));
+    }
+
+    this.updateScenarioData(roomId, scenario);
+  },
+
+  removeMemberFromTopic(roomId: string, topicId: string, userId: string) {
+    const rooms = this.getRooms();
+    const rIdx = rooms.findIndex(r => r.id === roomId);
+    if (rIdx === -1) return;
+
+    const scenario = { ...rooms[rIdx].scenarioData };
+    if (scenario.expeditionTopics) {
+      scenario.expeditionTopics = scenario.expeditionTopics.map(t => {
+        if (t.id === topicId) {
+          return {
+            ...t,
+            selectedMembers: t.selectedMembers.filter(m => m.userId !== userId)
+          };
+        }
+        return t;
+      });
+    }
+
+    this.updateScenarioData(roomId, scenario);
   },
 
   updateTopicCapacity(roomId: string, topicId: string, maxQuota: number, offlineQuota: number, onlineQuota: number) {

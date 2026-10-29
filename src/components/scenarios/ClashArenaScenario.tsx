@@ -66,6 +66,19 @@ export const ClashArenaScenario: React.FC<ClashArenaScenarioProps> = ({ room, on
     if (onUpdateRoom) onUpdateRoom();
   };
 
+  const handleCancelSide = () => {
+    if (!currentUser) return;
+    let updatedPro = proMembers.filter(m => m.userId !== currentUser.uid);
+    let updatedContra = contraMembers.filter(m => m.userId !== currentUser.uid);
+    setMySide('neutral');
+    roomsService.updateScenarioData(room.id, {
+      ...scenario,
+      clashProMembers: updatedPro,
+      clashContraMembers: updatedContra
+    });
+    if (onUpdateRoom) onUpdateRoom();
+  };
+
   const handleSendBullet = (e: React.FormEvent) => {
     e.preventDefault();
     if (!bulletMessage.trim() || mySide === 'neutral' || !currentUser) return;
@@ -174,6 +187,19 @@ export const ClashArenaScenario: React.FC<ClashArenaScenarioProps> = ({ room, on
               </span>
             </button>
           </div>
+
+          {/* Cancel button if user has picked a side */}
+          {mySide !== 'neutral' && (
+            <div className="pt-2 flex justify-center">
+              <button
+                type="button"
+                onClick={handleCancelSide}
+                className="px-4 py-2 rounded-2xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
+              >
+                <span>Batalkan Pilihan Kubu / Jadi Netral</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

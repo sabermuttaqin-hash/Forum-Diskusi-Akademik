@@ -5,6 +5,7 @@ import { roomsService } from '../lib/rooms';
 import { ExpeditionChoiceScenario } from './scenarios/ExpeditionChoiceScenario';
 import { ClashArenaScenario } from './scenarios/ClashArenaScenario';
 import { BuzzChamberScenario } from './scenarios/BuzzChamberScenario';
+import { EditRoomModal } from './EditRoomModal';
 import { 
   ArrowLeft, 
   Copy, 
@@ -42,6 +43,7 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
   const [activeTab, setActiveTab] = useState<'stream' | 'scenario' | 'assignments' | 'members'>('scenario');
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [isEditRoomOpen, setIsEditRoomOpen] = useState(false);
 
   // Material creation state
   const [isAddingMaterial, setIsAddingMaterial] = useState(false);
@@ -196,6 +198,16 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
               <span className="text-xs sm:text-sm text-slate-700 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 font-bold">
                 {room.section}
               </span>
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => setIsEditRoomOpen(true)}
+                  className="px-3.5 py-1 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
+                >
+                  <Edit3 className="w-3.5 h-3.5 text-amber-700" />
+                  <span>Edit Info Kelas</span>
+                </button>
+              )}
             </div>
 
             <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight font-brand leading-tight">
@@ -723,6 +735,16 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
           </div>
         </div>
       )}
+
+      {/* EDIT ROOM MODAL FOR GURU */}
+      <EditRoomModal
+        room={room}
+        isOpen={isEditRoomOpen}
+        onClose={() => setIsEditRoomOpen(false)}
+        onRoomUpdated={() => {
+          onRefreshRoom();
+        }}
+      />
 
     </div>
   );
