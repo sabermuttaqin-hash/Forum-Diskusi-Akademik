@@ -1,0 +1,6 @@
+{
+  "name": "Ruang Diskusi Akademik",
+  "description": "Platform kolaborasi dan ruang diskusi akademik komprehensif untuk mahasiswa, dosen, dan peneliti dengan verifikasi ilmiah, analisis AI, dan integrasi Firestore.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

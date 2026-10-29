@@ -1,0 +1,94 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Academic user profile and credentials",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "displayName": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "maxLength": 120 },
+        "role": { "type": "string", "enum": ["admin", "lecturer", "researcher", "student"] },
+        "institution": { "type": "string", "maxLength": 150 },
+        "faculty": { "type": "string", "maxLength": 100 },
+        "bio": { "type": "string", "maxLength": 500 },
+        "reputation": { "type": "number" },
+        "photoURL": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "maxLength": 40 }
+      },
+      "required": ["uid", "displayName", "role"]
+    },
+    "Discussion": {
+      "title": "Discussion Topic",
+      "description": "Academic discussion thread and research inquiries",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 250, "minLength": 5 },
+        "content": { "type": "string", "maxLength": 15000, "minLength": 10 },
+        "category": { "type": "string", "maxLength": 80 },
+        "tags": { "type": "array" },
+        "authorId": { "type": "string", "maxLength": 128 },
+        "authorName": { "type": "string", "maxLength": 100 },
+        "authorRole": { "type": "string", "maxLength": 40 },
+        "authorInstitution": { "type": "string", "maxLength": 150 },
+        "hypothesis": { "type": "string", "maxLength": 1000 },
+        "likesCount": { "type": "number" },
+        "repliesCount": { "type": "number" },
+        "isPinned": { "type": "boolean" },
+        "isResolved": { "type": "boolean" },
+        "createdAt": { "type": "string", "maxLength": 40 },
+        "updatedAt": { "type": "string", "maxLength": 40 }
+      },
+      "required": ["title", "content", "category", "authorId", "authorName"]
+    },
+    "Reply": {
+      "title": "Academic Reply",
+      "description": "Scholarly responses, peer reviews, and arguments",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "discussionId": { "type": "string", "maxLength": 128 },
+        "content": { "type": "string", "maxLength": 10000, "minLength": 2 },
+        "authorId": { "type": "string", "maxLength": 128 },
+        "authorName": { "type": "string", "maxLength": 100 },
+        "authorRole": { "type": "string", "maxLength": 40 },
+        "authorInstitution": { "type": "string", "maxLength": 150 },
+        "likesCount": { "type": "number" },
+        "isEndorsed": { "type": "boolean" },
+        "createdAt": { "type": "string", "maxLength": 40 }
+      },
+      "required": ["discussionId", "content", "authorId", "authorName"]
+    },
+    "Bookmark": {
+      "title": "User Bookmark",
+      "description": "Saved academic discussion for later study",
+      "type": "object",
+      "properties": {
+        "discussionId": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 250 },
+        "category": { "type": "string", "maxLength": 80 },
+        "savedAt": { "type": "string", "maxLength": 40 }
+      },
+      "required": ["discussionId", "title"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Individual academic user profiles"
+    },
+    "/discussions/{discussionId}": {
+      "schema": { "$ref": "#/entities/Discussion" },
+      "description": "Public academic discussions and forum threads"
+    },
+    "/discussions/{discussionId}/replies/{replyId}": {
+      "schema": { "$ref": "#/entities/Reply" },
+      "description": "Responses and peer critiques for a discussion"
+    },
+    "/users/{userId}/bookmarks/{bookmarkId}": {
+      "schema": { "$ref": "#/entities/Bookmark" },
+      "description": "Personal saved papers and discussions per user"
+    }
+  }
+}
