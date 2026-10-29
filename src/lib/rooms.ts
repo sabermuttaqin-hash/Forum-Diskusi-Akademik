@@ -524,6 +524,59 @@ export const roomsService = {
     return newSub;
   },
 
+  editMaterial(roomId: string, materialId: string, updatedData: Partial<CourseMaterial>) {
+    const rooms = this.getRooms();
+    const rIdx = rooms.findIndex(r => r.id === roomId);
+    if (rIdx === -1) return;
+
+    const mIdx = rooms[rIdx].materials.findIndex(m => m.id === materialId);
+    if (mIdx === -1) return;
+
+    rooms[rIdx].materials[mIdx] = {
+      ...rooms[rIdx].materials[mIdx],
+      ...updatedData
+    };
+
+    this.saveRooms(rooms);
+    try {
+      updateDoc(doc(db, 'rooms', roomId), { materials: rooms[rIdx].materials }).catch(() => {});
+    } catch {}
+    return rooms[rIdx].materials[mIdx];
+  },
+
+  deleteMaterial(roomId: string, materialId: string) {
+    const rooms = this.getRooms();
+    const rIdx = rooms.findIndex(r => r.id === roomId);
+    if (rIdx === -1) return;
+
+    rooms[rIdx].materials = rooms[rIdx].materials.filter(m => m.id !== materialId);
+    this.saveRooms(rooms);
+    try {
+      updateDoc(doc(db, 'rooms', roomId), { materials: rooms[rIdx].materials }).catch(() => {});
+    } catch {}
+  },
+
+  updateTopicCapacity(roomId: string, topicId: string, maxQuota: number, offlineQuota: number, onlineQuota: number) {
+    const rooms = this.getRooms();
+    const rIdx = rooms.findIndex(r => r.id === roomId);
+    if (rIdx === -1) return;
+
+    const scenario = rooms[rIdx].scenarioData;
+    if (!scenario.expeditionTopics) return;
+
+    const tIdx = scenario.expeditionTopics.findIndex(t => t.id === topicId);
+    if (tIdx === -1) return;
+
+    scenario.expeditionTopics[tIdx] = {
+      ...scenario.expeditionTopics[tIdx],
+      maxQuota,
+      offlineQuota,
+      onlineQuota
+    };
+
+    this.updateScenarioData(roomId, scenario);
+  },
+
   updateScenarioData(roomId: string, scenarioData: RoomScenarioData) {
     const rooms = this.getRooms();
     const idx = rooms.findIndex(r => r.id === roomId);

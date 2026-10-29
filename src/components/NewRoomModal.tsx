@@ -7,11 +7,10 @@ import {
   Compass, 
   Swords, 
   Flame, 
-  Sparkles, 
   PlusCircle, 
-  Building2, 
   BookOpen,
-  Layers
+  Sparkles,
+  Palette
 } from 'lucide-react';
 
 interface NewRoomModalProps {
@@ -28,7 +27,7 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({ isOpen, onClose, onR
   const [subject, setSubject] = useState('Kajian Bahasa & Linguistik');
   const [description, setDescription] = useState('');
   const [scenario, setScenario] = useState<ScenarioType>('expedition');
-  const [bannerGradient, setBannerGradient] = useState('from-violet-950 via-indigo-950 to-slate-950');
+  const [bannerGradient, setBannerGradient] = useState('from-[#FF5B37] via-[#FF8A65] to-[#FFA726]');
 
   if (!isOpen) return null;
 
@@ -50,9 +49,9 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({ isOpen, onClose, onR
           title: 'Tema 1: Pendekatan Wacana Multimodal Digital',
           description: 'Eksplorasi integrasi visual dan teks pada narasi publik.',
           physicalZone: 'Meja 1 (Zona Depan Kiri)',
-          maxQuota: 8,
-          offlineQuota: 4,
-          onlineQuota: 4,
+          maxQuota: 10,
+          offlineQuota: 5,
+          onlineQuota: 5,
           selectedMembers: []
         },
         {
@@ -60,9 +59,9 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({ isOpen, onClose, onR
           title: 'Tema 2: Konstruksi Identitas Budaya Lokal',
           description: 'Analisis pelestarian dialek daerah dalam era komunikasi global.',
           physicalZone: 'Meja 2 (Zona Depan Kanan)',
-          maxQuota: 8,
-          offlineQuota: 4,
-          onlineQuota: 4,
+          maxQuota: 10,
+          offlineQuota: 5,
+          onlineQuota: 5,
           selectedMembers: []
         },
         {
@@ -70,9 +69,9 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({ isOpen, onClose, onR
           title: 'Tema 3: Semiotika Konten Media Sosial',
           description: 'Membongkar makna tersembunyi leksikon viral.',
           physicalZone: 'Meja 3 (Zona Tengah)',
-          maxQuota: 8,
-          offlineQuota: 4,
-          onlineQuota: 4,
+          maxQuota: 10,
+          offlineQuota: 5,
+          onlineQuota: 5,
           selectedMembers: []
         },
         {
@@ -80,9 +79,9 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({ isOpen, onClose, onR
           title: 'Tema 4: Retorika Argumentatif Debat Kebijakan',
           description: 'Strategi persuasi wacana perundang-undangan.',
           physicalZone: 'Meja 4 (Zona Belakang Kiri)',
-          maxQuota: 8,
-          offlineQuota: 4,
-          onlineQuota: 4,
+          maxQuota: 10,
+          offlineQuota: 5,
+          onlineQuota: 5,
           selectedMembers: []
         },
         {
@@ -90,15 +89,15 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({ isOpen, onClose, onR
           title: 'Tema 5: Linguistik Forensik & Verifikasi Ujaran',
           description: 'Metodologi analisis bukti bahasa pada konteks hukum.',
           physicalZone: 'Meja 5 (Zona Belakang Kanan)',
-          maxQuota: 8,
-          offlineQuota: 4,
-          onlineQuota: 4,
+          maxQuota: 10,
+          offlineQuota: 5,
+          onlineQuota: 5,
           selectedMembers: []
         }
       ];
     } else if (scenario === 'clash') {
       defaultScenarioData.clashTopic = `Debat Kritis: ${name}`;
-      defaultScenarioData.clashQuestion = 'Apakah strategi ini memberikan dampak positif signifikan bagi efektivitas pembelajaran?';
+      defaultScenarioData.clashQuestion = 'Apakah integrasi model ini memberikan peningkatan kualitas akademik yang terukur?';
       defaultScenarioData.clashProMembers = [];
       defaultScenarioData.clashContraMembers = [];
       defaultScenarioData.clashBulletChats = [];
@@ -109,10 +108,10 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({ isOpen, onClose, onR
       defaultScenarioData.buzzTimeRemaining = 300;
       defaultScenarioData.buzzIsLocked = false;
       defaultScenarioData.buzzStations = [
-        { id: 'bz_c1', title: 'Stasiun 1: Formulasi Solusi Kreatif', subProblem: 'Ide terobosan spontan.', members: [] },
+        { id: 'bz_c1', title: 'Stasiun 1: Formulasi Gagasan Cepat', subProblem: 'Ide terobosan spontan.', members: [] },
         { id: 'bz_c2', title: 'Stasiun 2: Reduksi Hambatan Lapangan', subProblem: 'Identifikasi kendala implementasi.', members: [] },
-        { id: 'bz_c3', title: 'Stasiun 3: Efisiensi Model Pembelajaran', subProblem: 'Optimalisasi waktu & sarana.', members: [] },
-        { id: 'bz_c4', title: 'Stasiun 4: Partisipasi Siswa Inklusif', subProblem: 'Menjangkau siswa pasif.', members: [] },
+        { id: 'bz_c3', title: 'Stasiun 3: Optimalisasi Waktu & Sarana', subProblem: 'Efisiensi teknis pembelajaran.', members: [] },
+        { id: 'bz_c4', title: 'Stasiun 4: Partisipasi Siswa Inklusif', subProblem: 'Menjangkau siswa pasif & hybrid.', members: [] },
         { id: 'bz_c5', title: 'Stasiun 5: Evaluasi & Metrik Keberhasilan', subProblem: 'Indikator ketercapaian.', members: [] }
       ];
       defaultScenarioData.buzzIdeas = [];
@@ -125,7 +124,7 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({ isOpen, onClose, onR
       roomCode,
       teacherId: currentUser.uid,
       teacherName: currentUser.displayName,
-      description: description.trim() || `Ruang perkuliahan interaktif dengan skenario diskusi hybrid ${scenario.toUpperCase()}.`,
+      description: description.trim() || `Ruang perkuliahan interaktif dengan model diskusi hybrid ${scenario.toUpperCase()}.`,
       bannerGradient,
       discussionScenario: scenario,
       scenarioData: defaultScenarioData
@@ -136,21 +135,21 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({ isOpen, onClose, onR
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200">
-      <div className="bg-[#0B0D19] w-full max-w-xl rounded-3xl shadow-2xl border border-white/10 overflow-hidden flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200">
+      <div className="bg-white w-full max-w-xl rounded-3xl shadow-2xl border border-[#EFE9E1] overflow-hidden flex flex-col max-h-[92vh]">
         
         {/* Header */}
-        <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-violet-600/20 text-violet-400">
+        <div className="px-6 py-5 border-b border-[#EFE9E1] bg-[#FAF8F5] flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-2xl bg-[#FFEDE7] text-[#FF5B37]">
               <PlusCircle className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white font-serif-academic">
-                Buat Ruang Kelas Baru (Course Room)
+              <h3 className="text-lg font-black text-slate-900 font-serif-academic">
+                Buat Ruang Kelas Baru
               </h3>
-              <p className="text-xs text-slate-400">
-                Format Google Classroom dengan Pemodelan Diskusi Hybrid
+              <p className="text-xs text-slate-500 font-medium">
+                Format Google Classroom dengan Model Diskusi Hybrid
               </p>
             </div>
           </div>
@@ -158,7 +157,7 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({ isOpen, onClose, onR
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -167,8 +166,8 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({ isOpen, onClose, onR
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 flex-1">
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-              Nama Mata Kuliah / Ruang Kelas <span className="text-rose-400">*</span>
+            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">
+              Nama Mata Kuliah / Ruang Kelas <span className="text-[#FF5B37]">*</span>
             </label>
             <input
               type="text"
@@ -176,13 +175,13 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({ isOpen, onClose, onR
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Contoh: Kajian Wacana Kritis & Linguistik Terapan"
-              className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
+              className="w-full bg-[#FAF8F5] border border-[#E5DFD5] rounded-2xl px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FF5B37]/30 focus:border-[#FF5B37]"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">
                 Bagian / Sesi Kelas
               </label>
               <input
@@ -190,11 +189,11 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({ isOpen, onClose, onR
                 value={section}
                 onChange={(e) => setSection(e.target.value)}
                 placeholder="Contoh: Kelas A - Semester Ganjil"
-                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                className="w-full bg-[#FAF8F5] border border-[#E5DFD5] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FF5B37]/30"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">
                 Bidang Studi / Subjek
               </label>
               <input
@@ -202,46 +201,50 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({ isOpen, onClose, onR
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
                 placeholder="Contoh: Bahasa & Komunikasi"
-                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                className="w-full bg-[#FAF8F5] border border-[#E5DFD5] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FF5B37]/30"
               />
             </div>
           </div>
 
-          {/* Model Diskusi Selection (The 3 Scenarios!) */}
+          {/* Model Diskusi Selection */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-2">
               Pilih Model Diskusi Interaktif yang Diterapkan:
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               
               <button
                 type="button"
                 onClick={() => setScenario('expedition')}
-                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
                   scenario === 'expedition'
-                    ? 'bg-violet-950/40 border-violet-500 shadow-md ring-1 ring-violet-500/40 text-white'
-                    : 'bg-white/[0.02] border-white/10 text-slate-400 hover:text-white'
+                    ? 'bg-violet-50 border-violet-400 ring-2 ring-violet-200 text-slate-900'
+                    : 'bg-[#FAF8F5] border-[#EFE9E1] text-slate-600 hover:border-slate-300'
                 }`}
               >
-                <Compass className="w-4 h-4 text-violet-400 mb-1" />
-                <h5 className="text-xs font-bold mb-0.5">The Expedition</h5>
-                <p className="text-[10px] leading-tight opacity-80">
-                  5 Topik, kuota hybrid, meja fisik vs online.
+                <div className="w-8 h-8 rounded-xl bg-violet-100 text-violet-700 flex items-center justify-center mb-2">
+                  <Compass className="w-4 h-4" />
+                </div>
+                <h5 className="text-xs sm:text-sm font-bold font-serif-academic mb-0.5">The Expedition</h5>
+                <p className="text-[11px] leading-tight text-slate-500">
+                  5 Tema, kuota hybrid, meja fisik vs daring.
                 </p>
               </button>
 
               <button
                 type="button"
                 onClick={() => setScenario('clash')}
-                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
                   scenario === 'clash'
-                    ? 'bg-indigo-950/40 border-indigo-500 shadow-md ring-1 ring-indigo-500/40 text-white'
-                    : 'bg-white/[0.02] border-white/10 text-slate-400 hover:text-white'
+                    ? 'bg-amber-50 border-amber-400 ring-2 ring-amber-200 text-slate-900'
+                    : 'bg-[#FAF8F5] border-[#EFE9E1] text-slate-600 hover:border-slate-300'
                 }`}
               >
-                <Swords className="w-4 h-4 text-indigo-400 mb-1" />
-                <h5 className="text-xs font-bold mb-0.5">The Clash Arena</h5>
-                <p className="text-[10px] leading-tight opacity-80">
+                <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center mb-2">
+                  <Swords className="w-4 h-4" />
+                </div>
+                <h5 className="text-xs sm:text-sm font-bold font-serif-academic mb-0.5">The Clash Arena</h5>
+                <p className="text-[11px] leading-tight text-slate-500">
                   Debat Pro vs Kontra, War Room, & voting Sli.do.
                 </p>
               </button>
@@ -249,51 +252,79 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({ isOpen, onClose, onR
               <button
                 type="button"
                 onClick={() => setScenario('buzz')}
-                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
                   scenario === 'buzz'
-                    ? 'bg-cyan-950/40 border-cyan-500 shadow-md ring-1 ring-cyan-500/40 text-white'
-                    : 'bg-white/[0.02] border-white/10 text-slate-400 hover:text-white'
+                    ? 'bg-rose-50 border-rose-400 ring-2 ring-rose-200 text-slate-900'
+                    : 'bg-[#FAF8F5] border-[#EFE9E1] text-slate-600 hover:border-slate-300'
                 }`}
               >
-                <Flame className="w-4 h-4 text-cyan-400 mb-1" />
-                <h5 className="text-xs font-bold mb-0.5">The Buzz Chamber</h5>
-                <p className="text-[10px] leading-tight opacity-80">
-                  Curah ide 5 mnt, buzzer alarm, lock submission.
+                <div className="w-8 h-8 rounded-xl bg-rose-100 text-[#FF5B37] flex items-center justify-center mb-2">
+                  <Flame className="w-4 h-4" />
+                </div>
+                <h5 className="text-xs sm:text-sm font-bold font-serif-academic mb-0.5">The Buzz Chamber</h5>
+                <p className="text-[11px] leading-tight text-slate-500">
+                  Blitz 5 menit, audio buzzer & sintesis tim.
                 </p>
               </button>
 
             </div>
           </div>
 
-          {/* Description */}
+          {/* Banner Gradient Palette */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-              Deskripsi Kelas & Panduan Umum
+            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
+              <Palette className="w-4 h-4 text-slate-500" />
+              <span>Warna Kartu Room (Tema ToyStore)</span>
+            </label>
+            <div className="flex items-center gap-3">
+              {[
+                { name: 'Warm Coral', val: 'from-[#FF5B37] via-[#FF8A65] to-[#FFA726]' },
+                { name: 'Royal Indigo', val: 'from-[#4F46E5] via-[#6366F1] to-[#818CF8]' },
+                { name: 'Mint Emerald', val: 'from-[#059669] via-[#10B981] to-[#34D399]' },
+                { name: 'Ocean Cyan', val: 'from-[#0284C7] via-[#0EA5E9] to-[#38BDF8]' },
+                { name: 'Berry Violet', val: 'from-[#7C3AED] via-[#9333EA] to-[#C084FC]' }
+              ].map((g) => (
+                <button
+                  key={g.name}
+                  type="button"
+                  onClick={() => setBannerGradient(g.val)}
+                  className={`w-9 h-9 rounded-2xl bg-gradient-to-r ${g.val} transition-transform cursor-pointer ${
+                    bannerGradient === g.val ? 'ring-3 ring-[#FF5B37] scale-110' : 'opacity-80 hover:opacity-100'
+                  }`}
+                  title={g.name}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">
+              Deskripsi Kelas (Opsional)
             </label>
             <textarea
               rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Jelaskan tujuan perkuliahan atau ketentuan bagi mahasiswa..."
-              className="w-full bg-white/[0.03] border border-white/10 rounded-xl p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
+              placeholder="Jelaskan silabus singkat atau tujuan capaian pembelajaran..."
+              className="w-full bg-[#FAF8F5] border border-[#E5DFD5] rounded-2xl p-3 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FF5B37]/30 resize-none"
             />
           </div>
 
-          {/* Footer Actions */}
-          <div className="pt-3 border-t border-white/10 flex items-center justify-end gap-3">
+          {/* Action Footer */}
+          <div className="pt-2 flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition-all cursor-pointer"
+              className="px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-100 transition-all cursor-pointer"
             >
               Batal
             </button>
             <button
               type="submit"
               disabled={!name.trim()}
-              className="py-2.5 px-5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold text-xs shadow-md transition-all disabled:opacity-40 cursor-pointer"
+              className="px-6 py-2.5 rounded-2xl bg-[#FF5B37] hover:bg-[#E84E2C] text-white font-bold text-xs sm:text-sm shadow-md shadow-[#FF5B37]/25 transition-all disabled:opacity-50 cursor-pointer"
             >
-              Buat Room Kelas
+              Buat Kelas Sekarang
             </button>
           </div>
         </form>

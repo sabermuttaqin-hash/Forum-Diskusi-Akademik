@@ -21,9 +21,12 @@ import {
   Laptop, 
   CheckCircle2, 
   Calendar, 
-  Award,
-  Sparkles,
-  UserPlus
+  Edit3,
+  Trash2,
+  X,
+  Save,
+  UserPlus,
+  BookOpen
 } from 'lucide-react';
 
 interface RoomDetailViewProps {
@@ -34,18 +37,23 @@ interface RoomDetailViewProps {
 
 export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, onRefreshRoom }) => {
   const { currentUser } = useAuth();
-  const isAdmin = currentUser?.isAdmin || currentUser?.uid === room.teacherId;
+  const isAdmin = currentUser?.isAdmin || currentUser?.uid === room.teacherId || currentUser?.role === 'admin' || currentUser?.role === 'lecturer';
 
   const [activeTab, setActiveTab] = useState<'stream' | 'scenario' | 'assignments' | 'members'>('scenario');
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
-  // Material creation state (for teachers)
+  // Material creation state
   const [isAddingMaterial, setIsAddingMaterial] = useState(false);
   const [materialTitle, setMaterialTitle] = useState('');
   const [materialContent, setMaterialContent] = useState('');
 
-  // Assignment submission state (for students)
+  // Material editing state (GURU BISA EDIT MATERI)
+  const [editingMaterial, setEditingMaterial] = useState<CourseMaterial | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
+
+  // Assignment submission state
   const [selectedAssignmentId, setSelectedAssignmentId] = useState<string>(room.assignments[0]?.id || '');
   const [submissionText, setSubmissionText] = useState('');
   const [attachmentName, setAttachmentName] = useState('');
@@ -86,6 +94,32 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
     onRefreshRoom();
   };
 
+  const handleStartEditMaterial = (mat: CourseMaterial) => {
+    setEditingMaterial(mat);
+    setEditTitle(mat.title);
+    setEditContent(mat.content);
+  };
+
+  const handleSaveEditedMaterial = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMaterial || !editTitle.trim() || !editContent.trim()) return;
+
+    roomsService.editMaterial(room.id, editingMaterial.id, {
+      title: editTitle.trim(),
+      content: editContent.trim()
+    });
+
+    setEditingMaterial(null);
+    onRefreshRoom();
+  };
+
+  const handleDeleteMaterial = (materialId: string) => {
+    if (window.confirm('Hapus materi pembahasan ini dari ruang kelas?')) {
+      roomsService.deleteMaterial(room.id, materialId);
+      onRefreshRoom();
+    }
+  };
+
   const handleSubmitAssignment = (e: React.FormEvent) => {
     e.preventDefault();
     if (!submissionText.trim() || !currentUser) return;
@@ -120,13 +154,13 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
   const getScenarioBadge = () => {
     switch (room.discussionScenario) {
       case 'expedition':
-        return { label: 'The Expedition Choice', icon: Compass, color: 'text-violet-400 bg-violet-500/10 border-violet-500/20' };
+        return { label: 'The Expedition Choice', icon: Compass, color: 'text-amber-800 bg-amber-100 border-amber-300' };
       case 'clash':
-        return { label: 'The Clash Arena', icon: Swords, color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20' };
+        return { label: 'The Clash Arena', icon: Swords, color: 'text-indigo-800 bg-indigo-100 border-indigo-300' };
       case 'buzz':
-        return { label: 'The Buzz Chamber', icon: Flame, color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20' };
+        return { label: 'The Buzz Chamber', icon: Flame, color: 'text-cyan-800 bg-cyan-100 border-cyan-300' };
       default:
-        return { label: 'The Expedition Choice', icon: Compass, color: 'text-violet-400 bg-violet-500/10 border-violet-500/20' };
+        return { label: 'The Expedition Choice', icon: Compass, color: 'text-amber-800 bg-amber-100 border-amber-300' };
     }
   };
 
@@ -134,85 +168,85 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
   const ScenarioIcon = scenarioBadge.icon;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 font-sans">
       
-      {/* Top back button */}
+      {/* Back button */}
       <div>
         <button
           type="button"
           onClick={onBack}
-          className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors cursor-pointer"
+          className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Kembali ke Daftar Ruang Kelas</span>
+          <span>Kembali ke Hub Ruang Kelas</span>
         </button>
       </div>
 
-      {/* Google Classroom Banner with Lamatic GenAI Aesthetic */}
-      <div className={`p-6 sm:p-10 rounded-3xl bg-gradient-to-r ${room.bannerGradient} border border-white/10 shadow-2xl relative overflow-hidden text-white`}>
-        <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none" />
+      {/* ToyStore-style Cheerful Classroom Banner */}
+      <div className="p-8 sm:p-10 rounded-3xl bg-white border-2 border-slate-200/90 shadow-md relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-rose-50/80 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
-          <div className="space-y-2 max-w-2xl">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${scenarioBadge.color}`}>
-                <ScenarioIcon className="w-3.5 h-3.5" />
+          <div className="space-y-3 max-w-2xl">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs sm:text-sm font-extrabold border ${scenarioBadge.color}`}>
+                <ScenarioIcon className="w-4 h-4" />
                 <span>Model: {scenarioBadge.label}</span>
               </span>
-              <span className="text-xs text-slate-300 px-2 py-0.5 rounded-full bg-black/30 border border-white/10">
+              <span className="text-xs sm:text-sm text-slate-700 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 font-bold">
                 {room.section}
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight font-serif-academic leading-tight">
+            <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight font-brand leading-tight">
               {room.name}
             </h1>
 
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-              Pengampu: <strong className="text-white">{room.teacherName}</strong> • Bidang: {room.subject}
+            <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-medium">
+              Pengampu: <strong className="text-slate-900 font-bold">{room.teacherName}</strong> • Bidang: {room.subject}
             </p>
           </div>
 
-          {/* Room Code Card (Google Classroom Style) */}
-          <div className="bg-[#0B0D17]/80 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl shrink-0 min-w-[220px]">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+          {/* Room Code Card (ToyStore Retail Style) */}
+          <div className="bg-amber-50/80 border-2 border-amber-300 rounded-3xl p-5 shadow-sm shrink-0 min-w-[240px]">
+            <span className="text-xs font-extrabold uppercase tracking-wider text-amber-900 block mb-1">
               Kode Masuk Room Kelas
             </span>
-            <div className="flex items-center justify-between gap-3 mb-2">
-              <span className="text-2xl font-black font-mono tracking-widest text-violet-300">
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <span className="text-2xl sm:text-3xl font-black font-mono tracking-widest text-slate-900">
                 {room.roomCode}
               </span>
               <button
                 type="button"
                 onClick={handleCopyCode}
-                className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 cursor-pointer transition-all"
+                className="p-2 rounded-xl bg-white border border-amber-300 text-slate-700 hover:bg-amber-100 cursor-pointer transition-all shadow-xs"
                 title="Salin kode room"
               >
-                {copiedCode ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                {copiedCode ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
               </button>
             </div>
 
             <button
               type="button"
               onClick={handleCopyShareLink}
-              className="w-full py-1.5 px-2.5 rounded-xl bg-violet-600/30 hover:bg-violet-600/50 border border-violet-500/30 text-[11px] font-semibold text-violet-200 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+              className="w-full py-2 px-3 rounded-2xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
             >
-              <Share2 className="w-3 h-3 text-violet-400" />
+              <Share2 className="w-4 h-4" />
               <span>{copiedLink ? 'Tautan Disalin!' : 'Bagikan Link Room'}</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Classroom Navigation Tabs */}
-      <div className="flex border-b border-white/10 bg-[#0F111E] p-1 rounded-2xl overflow-x-auto text-xs font-semibold">
+      {/* Classroom Navigation Tabs (ToyStore Chunky Pills) */}
+      <div className="flex bg-white p-2 rounded-3xl border border-slate-200 overflow-x-auto text-sm font-bold shadow-xs gap-1.5">
         <button
           type="button"
           onClick={() => setActiveTab('scenario')}
-          className={`py-2.5 px-4 rounded-xl flex items-center gap-2 whitespace-nowrap transition-all cursor-pointer ${
+          className={`py-3 px-5 rounded-2xl flex items-center gap-2.5 whitespace-nowrap transition-all cursor-pointer ${
             activeTab === 'scenario'
-              ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md'
-              : 'text-slate-400 hover:text-white hover:bg-white/5'
+              ? 'bg-rose-500 text-white shadow-sm'
+              : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
           }`}
         >
           <ScenarioIcon className="w-4 h-4" />
@@ -222,10 +256,10 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
         <button
           type="button"
           onClick={() => setActiveTab('stream')}
-          className={`py-2.5 px-4 rounded-xl flex items-center gap-2 whitespace-nowrap transition-all cursor-pointer ${
+          className={`py-3 px-5 rounded-2xl flex items-center gap-2.5 whitespace-nowrap transition-all cursor-pointer ${
             activeTab === 'stream'
-              ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md'
-              : 'text-slate-400 hover:text-white hover:bg-white/5'
+              ? 'bg-rose-500 text-white shadow-sm'
+              : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
           }`}
         >
           <FileText className="w-4 h-4" />
@@ -235,10 +269,10 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
         <button
           type="button"
           onClick={() => setActiveTab('assignments')}
-          className={`py-2.5 px-4 rounded-xl flex items-center gap-2 whitespace-nowrap transition-all cursor-pointer ${
+          className={`py-3 px-5 rounded-2xl flex items-center gap-2.5 whitespace-nowrap transition-all cursor-pointer ${
             activeTab === 'assignments'
-              ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md'
-              : 'text-slate-400 hover:text-white hover:bg-white/5'
+              ? 'bg-rose-500 text-white shadow-sm'
+              : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
           }`}
         >
           <UploadCloud className="w-4 h-4" />
@@ -248,10 +282,10 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
         <button
           type="button"
           onClick={() => setActiveTab('members')}
-          className={`py-2.5 px-4 rounded-xl flex items-center gap-2 whitespace-nowrap transition-all cursor-pointer ${
+          className={`py-3 px-5 rounded-2xl flex items-center gap-2.5 whitespace-nowrap transition-all cursor-pointer ${
             activeTab === 'members'
-              ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md'
-              : 'text-slate-400 hover:text-white hover:bg-white/5'
+              ? 'bg-rose-500 text-white shadow-sm'
+              : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
           }`}
         >
           <Users className="w-4 h-4" />
@@ -259,7 +293,7 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
         </button>
       </div>
 
-      {/* TAB 1: Skenario Diskusi Interaktif (Expedition / Clash / Buzz) */}
+      {/* TAB 1: Skenario Diskusi Interaktif */}
       {activeTab === 'scenario' && (
         <div>
           {room.discussionScenario === 'expedition' && (
@@ -274,25 +308,25 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
         </div>
       )}
 
-      {/* TAB 2: Stream Materi & Silabus */}
+      {/* TAB 2: Stream Materi & Pembahasan (DENGAN FITUR EDIT MATERI GURU) */}
       {activeTab === 'stream' && (
         <div className="space-y-6">
           {/* Guru action: Add Material */}
           {isAdmin && (
-            <div className="p-5 rounded-2xl bg-[#0F111E] border border-white/10">
+            <div className="p-6 rounded-3xl bg-white border-2 border-slate-200 shadow-sm">
               {!isAddingMaterial ? (
                 <button
                   type="button"
                   onClick={() => setIsAddingMaterial(true)}
-                  className="w-full py-3 px-4 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 text-xs font-semibold text-slate-300 hover:text-white flex items-center justify-center gap-2 transition-all cursor-pointer"
+                  className="w-full py-3.5 px-4 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-300 text-sm font-bold text-slate-800 flex items-center justify-center gap-2 transition-all cursor-pointer"
                 >
-                  <PlusCircle className="w-4 h-4 text-violet-400" />
-                  <span>+ Publikasikan Materi Baru atau Panduan Topik</span>
+                  <PlusCircle className="w-5 h-5 text-rose-500" />
+                  <span>+ Tambah Materi / Tema Pembahasan Baru</span>
                 </button>
               ) : (
-                <form onSubmit={handleCreateMaterial} className="space-y-3">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-violet-300">
-                    Tambah Materi / Tema Pembahasan Baru:
+                <form onSubmit={handleCreateMaterial} className="space-y-4">
+                  <h4 className="text-base font-bold text-slate-900 font-brand">
+                    Publikasikan Materi Baru untuk Mahasiswa:
                   </h4>
                   <input
                     type="text"
@@ -300,27 +334,27 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
                     value={materialTitle}
                     onChange={(e) => setMaterialTitle(e.target.value)}
                     placeholder="Judul Materi / Topik Kajian..."
-                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-2xl px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white"
                   />
                   <textarea
-                    rows={3}
+                    rows={4}
                     required
                     value={materialContent}
                     onChange={(e) => setMaterialContent(e.target.value)}
-                    placeholder="Uraikan instruksi bacaan, tema diskusi, atau tautan referensi..."
-                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl p-3.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                    placeholder="Tuliskan isi instruksi materi, landasan teori, atau topik pembahasan..."
+                    className="w-full bg-slate-50 border border-slate-300 rounded-2xl p-4 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white"
                   />
-                  <div className="flex justify-end gap-2">
+                  <div className="flex justify-end gap-3">
                     <button
                       type="button"
                       onClick={() => setIsAddingMaterial(false)}
-                      className="px-3 py-1.5 rounded-xl text-xs text-slate-400 hover:text-white"
+                      className="px-4 py-2 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-100 cursor-pointer"
                     >
                       Batal
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-1.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-semibold text-xs shadow-md"
+                      className="px-6 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-sm shadow-sm cursor-pointer"
                     >
                       Posting Materi
                     </button>
@@ -330,26 +364,56 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
             </div>
           )}
 
-          {/* List of Materials */}
+          {/* List of Materials with Edit & Delete options for teachers */}
           <div className="space-y-4">
             {room.materials.map((mat) => (
-              <div key={mat.id} className="p-6 rounded-3xl bg-[#0F111E] border border-white/10 space-y-3">
-                <div className="flex items-center justify-between pb-3 border-b border-white/5">
-                  <div className="flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-violet-400" />
-                    <span className="text-xs font-bold text-white">{mat.title}</span>
+              <div key={mat.id} className="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-2xl bg-amber-100 text-amber-800">
+                      <FileText className="w-5 h-5 text-amber-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-base sm:text-lg font-bold text-slate-900 font-brand">{mat.title}</h3>
+                      <span className="text-xs text-slate-500">
+                        Oleh: {mat.authorName} • {mat.createdAt.split('T')[0]}
+                      </span>
+                    </div>
                   </div>
-                  <span className="text-[11px] text-slate-500">
-                    Diposting oleh {mat.authorName}
-                  </span>
+
+                  {/* Teacher Edit & Delete Controls */}
+                  {isAdmin && (
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleStartEditMaterial(mat)}
+                        className="px-3 py-1.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs sm:text-sm font-bold border border-amber-300 flex items-center gap-1.5 transition-all cursor-pointer"
+                        title="Edit Materi Ini"
+                      >
+                        <Edit3 className="w-3.5 h-3.5 text-amber-700" />
+                        <span>Edit Materi</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteMaterial(mat.id)}
+                        className="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all cursor-pointer"
+                        title="Hapus Materi"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed whitespace-pre-line">
+
+                <p className="text-sm sm:text-base text-slate-700 leading-relaxed whitespace-pre-line font-medium">
                   {mat.content}
                 </p>
+
                 {mat.tags && (
-                  <div className="flex flex-wrap gap-1.5 pt-2">
+                  <div className="flex flex-wrap gap-2 pt-2">
                     {mat.tags.map((t, idx) => (
-                      <span key={idx} className="text-[10px] px-2 py-0.5 rounded-md bg-white/5 text-slate-400">
+                      <span key={idx} className="text-xs px-3 py-1 rounded-xl bg-slate-100 text-slate-700 font-bold">
                         #{t}
                       </span>
                     ))}
@@ -361,14 +425,82 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
         </div>
       )}
 
-      {/* TAB 3: Tempat Pengumpulan Tugas (Google Classroom Assignment Workflow) */}
+      {/* EDIT MATERIAL MODAL FOR GURU */}
+      {editingMaterial && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white w-full max-w-xl rounded-3xl shadow-2xl border-2 border-amber-300 overflow-hidden flex flex-col">
+            <div className="px-6 py-5 border-b border-slate-200 flex items-center justify-between bg-amber-50">
+              <div className="flex items-center gap-2">
+                <Edit3 className="w-5 h-5 text-amber-600" />
+                <h3 className="text-base sm:text-lg font-bold text-slate-900 font-brand">
+                  Edit Materi / Pembahasan (Guru)
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingMaterial(null)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-800"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditedMaterial} className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5">
+                  Judul Materi
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-2xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5">
+                  Isi Pembahasan
+                </label>
+                <textarea
+                  rows={5}
+                  required
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-2xl p-4 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white leading-relaxed"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setEditingMaterial(null)}
+                  className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-100"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs sm:text-sm shadow-md flex items-center gap-1.5"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Simpan Perubahan Materi</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 3: Tempat Pengumpulan Tugas */}
       {activeTab === 'assignments' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
             {/* Left: Assignment List Selector */}
             <div className="space-y-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-600">
                 Daftar Tugas Aktif:
               </h3>
               {room.assignments.map((assign) => {
@@ -380,23 +512,23 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
                     key={assign.id}
                     type="button"
                     onClick={() => setSelectedAssignmentId(assign.id)}
-                    className={`w-full p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                    className={`w-full p-5 rounded-3xl border-2 text-left transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-violet-950/30 border-violet-500 shadow-md ring-1 ring-violet-500/30'
-                        : 'bg-[#0F111E] border-white/10 hover:bg-white/[0.03]'
+                        ? 'bg-rose-50/70 border-rose-500 shadow-sm ring-2 ring-rose-300'
+                        : 'bg-white border-slate-200 hover:border-slate-300'
                     }`}
                   >
-                    <h4 className="text-xs font-bold text-white mb-1">{assign.title}</h4>
-                    <p className="text-[11px] text-slate-400 mb-2">Batas: {assign.dueDate.split('T')[0]}</p>
-                    <div className="flex items-center justify-between text-[10px]">
-                      <span className="text-violet-300 font-bold">{assign.points} Poin</span>
+                    <h4 className="text-sm font-bold text-slate-900 mb-1">{assign.title}</h4>
+                    <p className="text-xs text-slate-500 mb-3">Batas: {assign.dueDate.split('T')[0]}</p>
+                    <div className="flex items-center justify-between text-xs font-bold">
+                      <span className="text-rose-600">{assign.points} Poin</span>
                       {mySub ? (
-                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold">
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
                           Sudah Mengumpulkan
                         </span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold">
-                          Belum Dikumpulkan
+                        <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900">
+                          Belum Mengumpulkan
                         </span>
                       )}
                     </div>
@@ -405,7 +537,7 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
               })}
             </div>
 
-            {/* Right: Submission Details & Form */}
+            {/* Right: Submission Form */}
             <div className="md:col-span-2 space-y-5">
               {(() => {
                 const currentAssign = room.assignments.find(a => a.id === selectedAssignmentId);
@@ -414,64 +546,57 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
                 const mySub = currentAssign.submissions.find(s => s.studentId === currentUser?.uid);
 
                 return (
-                  <div className="p-6 rounded-3xl bg-[#0F111E] border border-white/10 space-y-5">
+                  <div className="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-5">
                     <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-base font-bold text-white">{currentAssign.title}</h3>
-                        <span className="text-xs px-2.5 py-1 rounded-full bg-violet-500/20 text-violet-300 font-bold">
+                      <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                        <h3 className="text-lg sm:text-xl font-bold text-slate-900 font-brand">{currentAssign.title}</h3>
+                        <span className="text-xs sm:text-sm px-3.5 py-1 rounded-full bg-rose-100 text-rose-800 font-extrabold border border-rose-300">
                           Nilai Maks: {currentAssign.points}
                         </span>
                       </div>
-                      <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mb-4">
+                      <p className="text-sm sm:text-base text-slate-600 leading-relaxed mb-4">
                         {currentAssign.description}
                       </p>
-                      <div className="flex items-center gap-2 text-xs text-slate-400">
-                        <Calendar className="w-3.5 h-3.5" />
-                        <span>Batas Waktu Pengumpulan: {new Date(currentAssign.dueDate).toLocaleDateString('id-ID', { dateStyle: 'long' })}</span>
+                      <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 font-medium">
+                        <Calendar className="w-4 h-4 text-rose-500" />
+                        <span>Batas Waktu: {new Date(currentAssign.dueDate).toLocaleDateString('id-ID', { dateStyle: 'long' })}</span>
                       </div>
                     </div>
 
-                    {/* Status Pengumpulan Siswa Saat Ini */}
                     {mySub ? (
-                      <div className="p-4 rounded-2xl bg-emerald-950/20 border border-emerald-500/30 space-y-2">
+                      <div className="p-5 rounded-2xl bg-emerald-50 border-2 border-emerald-300 space-y-3">
                         <div className="flex items-center justify-between">
-                          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-300">
-                            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                            Tugas Anda Telah Dikumpulkan
+                          <span className="inline-flex items-center gap-2 text-sm font-bold text-emerald-900">
+                            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                            Tugas Anda Telah Berhasil Dikumpulkan
                           </span>
                           {mySub.score !== undefined && (
-                            <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500 text-slate-950 font-bold">
-                              Nilai: {mySub.score}/{currentAssign.points}
+                            <span className="text-sm px-3 py-1 rounded-full bg-emerald-600 text-white font-black">
+                              Nilai: {mySub.score} / {currentAssign.points}
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-slate-200 font-mono bg-white/[0.02] p-2.5 rounded-xl border border-white/5">
+                        <p className="text-sm text-slate-800 bg-white p-4 rounded-xl border border-emerald-200 leading-relaxed font-sans">
                           "{mySub.content}"
                         </p>
                         {mySub.attachmentName && (
-                          <div className="text-[11px] text-slate-400 flex items-center gap-1.5">
-                            <FileText className="w-3.5 h-3.5 text-violet-400" />
-                            <span>Lampiran: {mySub.attachmentName}</span>
-                          </div>
-                        )}
-                        {mySub.feedback && (
-                          <div className="p-2.5 rounded-xl bg-violet-950/30 text-xs text-violet-200 border border-violet-500/30">
-                            <strong>Catatan Dosen:</strong> {mySub.feedback}
+                          <div className="text-xs sm:text-sm text-slate-600 flex items-center gap-2">
+                            <FileText className="w-4 h-4 text-rose-500" />
+                            <span>Lampiran: <strong>{mySub.attachmentName}</strong></span>
                           </div>
                         )}
                       </div>
                     ) : (
-                      /* Form Pengumpulan Tugas Siswa */
-                      <form onSubmit={handleSubmitAssignment} className="space-y-4 pt-4 border-t border-white/10">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-                          <UploadCloud className="w-4 h-4 text-violet-400" />
+                      <form onSubmit={handleSubmitAssignment} className="space-y-4 pt-4 border-t border-slate-100">
+                        <h4 className="text-sm font-bold text-slate-900 font-brand flex items-center gap-2">
+                          <UploadCloud className="w-4 h-4 text-rose-500" />
                           Formulir Pengumpulan Tugas Anda:
                         </h4>
 
                         {submitSuccess && (
-                          <div className="p-3 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs flex items-center gap-2">
-                            <CheckCircle2 className="w-4 h-4" />
-                            <span>Tugas berhasil dikirim ke Pengampu Ruang Kelas!</span>
+                          <div className="p-4 rounded-2xl bg-emerald-100 border border-emerald-300 text-emerald-900 text-sm font-bold flex items-center gap-2">
+                            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                            <span>Tugas berhasil dikirim ke pengampu ruang kelas!</span>
                           </div>
                         )}
 
@@ -480,8 +605,8 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
                           required
                           value={submissionText}
                           onChange={(e) => setSubmissionText(e.target.value)}
-                          placeholder="Ketikkan teks jawaban tugas, link Google Docs/Drive, atau sintesis kelompok..."
-                          className="w-full bg-white/[0.03] border border-white/10 rounded-xl p-3.5 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                          placeholder="Ketikkan teks jawaban tugas, link Google Docs, atau kesimpulan kelompok Anda..."
+                          className="w-full bg-slate-50 border border-slate-300 rounded-2xl p-4 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white"
                         />
 
                         <input
@@ -489,13 +614,13 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
                           value={attachmentName}
                           onChange={(e) => setAttachmentName(e.target.value)}
                           placeholder="Nama Berkas Lampiran (contoh: Laporan_Sintesis_Kelompok_A.pdf)"
-                          className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                          className="w-full bg-slate-50 border border-slate-300 rounded-2xl px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white"
                         />
 
                         <button
                           type="submit"
                           disabled={!submissionText.trim()}
-                          className="py-2.5 px-5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-semibold text-xs shadow-md transition-all disabled:opacity-40 cursor-pointer flex items-center gap-2"
+                          className="py-3 px-6 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-sm shadow-md transition-all disabled:opacity-40 cursor-pointer flex items-center gap-2"
                         >
                           <UploadCloud className="w-4 h-4" />
                           <span>Serahkan Tugas Sekarang</span>
@@ -503,29 +628,21 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
                       </form>
                     )}
 
-                    {/* Guru Panel: Review all student submissions */}
+                    {/* Teacher review panel */}
                     {isAdmin && (
-                      <div className="pt-6 border-t border-white/10 space-y-3">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-violet-300">
+                      <div className="pt-6 border-t border-slate-200 space-y-3">
+                        <h4 className="text-sm font-bold text-slate-900 font-brand">
                           Panel Penilaian Dosen ({currentAssign.submissions.length} Siswa Mengumpulkan):
                         </h4>
 
-                        <div className="space-y-2">
+                        <div className="space-y-2.5">
                           {currentAssign.submissions.map((sub) => (
-                            <div key={sub.id} className="p-3.5 rounded-xl bg-white/[0.03] border border-white/5 text-xs space-y-1.5">
+                            <div key={sub.id} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-sm space-y-2">
                               <div className="flex items-center justify-between">
-                                <span className="font-bold text-white">{sub.studentName}</span>
-                                <span className="text-[11px] text-slate-400">{sub.submittedAt.split('T')[0]}</span>
+                                <span className="font-bold text-slate-900 text-sm">{sub.studentName}</span>
+                                <span className="text-xs text-slate-500">{sub.submittedAt.split('T')[0]}</span>
                               </div>
-                              <p className="text-slate-300 font-mono text-[11px]">{sub.content}</p>
-                              <div className="flex items-center justify-between pt-1">
-                                <span className="text-emerald-400 font-bold">Status: {sub.status}</span>
-                                {sub.score ? (
-                                  <span className="text-violet-300 font-bold">Nilai: {sub.score}</span>
-                                ) : (
-                                  <span className="text-amber-400 italic">Menunggu Evaluasi</span>
-                                )}
-                              </div>
+                              <p className="text-slate-700 bg-white p-3 rounded-xl border border-slate-200 text-xs sm:text-sm font-sans">{sub.content}</p>
                             </div>
                           ))}
                         </div>
@@ -540,20 +657,19 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
         </div>
       )}
 
-      {/* TAB 4: Anggota & Tim (Mengundang Murid Langsung & Kode Room) */}
+      {/* TAB 4: Anggota Kelas */}
       {activeTab === 'members' && (
-        <div className="p-6 sm:p-8 rounded-3xl bg-[#0F111E] border border-white/10 space-y-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+        <div className="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
             <div>
-              <h3 className="text-base font-bold text-white">
+              <h3 className="text-lg font-bold text-slate-900 font-brand">
                 Daftar Mahasiswa & Partisipan Kelas
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-sm text-slate-600">
                 Terdiri dari peserta yang hadir fisik di kelas (Offline) dan daring (Online).
               </p>
             </div>
 
-            {/* Invite Form */}
             {isAdmin && (
               <form onSubmit={handleInviteStudent} className="flex gap-2 w-full sm:w-auto">
                 <input
@@ -562,13 +678,13 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
                   value={inviteInput}
                   onChange={(e) => setInviteInput(e.target.value)}
                   placeholder="Nama / Email Mahasiswa..."
-                  className="bg-white/[0.03] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                  className="bg-slate-50 border border-slate-300 rounded-2xl px-4 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500"
                 />
                 <button
                   type="submit"
-                  className="px-3.5 py-1.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-semibold text-xs transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
+                  className="px-5 py-2 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center gap-1.5 shrink-0 shadow-sm"
                 >
-                  <UserPlus className="w-3.5 h-3.5" />
+                  <UserPlus className="w-4 h-4" />
                   <span>Undang Langsung</span>
                 </button>
               </form>
@@ -576,32 +692,31 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
           </div>
 
           {inviteSuccessMsg && (
-            <div className="p-3 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4" />
+            <div className="p-4 rounded-2xl bg-emerald-100 border border-emerald-300 text-emerald-900 text-sm font-bold flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600" />
               <span>{inviteSuccessMsg}</span>
             </div>
           )}
 
-          {/* Members List Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {room.memberProfiles?.map((mem) => (
-              <div key={mem.uid} className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center justify-between">
+              <div key={mem.uid} className="p-5 rounded-3xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center font-bold text-xs text-white">
+                  <div className="w-10 h-10 rounded-2xl bg-rose-500 text-white flex items-center justify-center font-bold text-sm shadow-xs">
                     {mem.displayName.charAt(0)}
                   </div>
                   <div>
-                    <h5 className="text-xs font-bold text-white">{mem.displayName}</h5>
-                    <span className="text-[10px] text-slate-400 capitalize">{mem.role}</span>
+                    <h5 className="text-sm font-bold text-slate-900">{mem.displayName}</h5>
+                    <span className="text-xs text-slate-500 capitalize">{mem.role}</span>
                   </div>
                 </div>
 
-                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${
+                <span className={`text-xs px-3 py-1 rounded-full font-bold border ${
                   mem.attendance === 'offline'
-                    ? 'bg-amber-500/10 text-amber-300 border-amber-500/20'
-                    : 'bg-cyan-500/10 text-cyan-300 border-cyan-500/20'
+                    ? 'bg-amber-100 text-amber-900 border-amber-300'
+                    : 'bg-blue-100 text-blue-900 border-blue-300'
                 }`}>
-                  {mem.attendance === 'offline' ? 'Offline di Kelas' : 'Online di Rumah'}
+                  {mem.attendance === 'offline' ? 'Offline' : 'Online'}
                 </span>
               </div>
             ))}

@@ -15,8 +15,8 @@ import {
   Sparkles,
   BookOpen,
   Search,
-  ShieldCheck,
-  CheckCircle2
+  CheckCircle2,
+  PackageCheck
 } from 'lucide-react';
 
 interface RoomListViewProps {
@@ -40,8 +40,6 @@ export const RoomListView: React.FC<RoomListViewProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [filterScenario, setFilterScenario] = useState<'all' | ScenarioType>('all');
 
-  // Filter rooms
-  // If student: show rooms where currentUser.uid is member, or allow viewing public course catalog
   const myRooms = rooms.filter(r => r.members.includes(currentUser?.uid || ''));
 
   const filteredRooms = (myRooms.length > 0 ? myRooms : rooms).filter(r => {
@@ -60,39 +58,43 @@ export const RoomListView: React.FC<RoomListViewProps> = ({
   const getScenarioInfo = (type: ScenarioType) => {
     switch (type) {
       case 'expedition':
-        return { label: 'The Expedition Choice', icon: Compass, color: 'text-violet-400 bg-violet-500/10 border-violet-500/20' };
+        return { label: 'The Expedition Choice', icon: Compass, color: 'text-amber-900 bg-amber-100 border-amber-300' };
       case 'clash':
-        return { label: 'The Clash Arena', icon: Swords, color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20' };
+        return { label: 'The Clash Arena', icon: Swords, color: 'text-rose-900 bg-rose-100 border-rose-300' };
       case 'buzz':
-        return { label: 'The Buzz Chamber', icon: Flame, color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20' };
+        return { label: 'The Buzz Chamber', icon: Flame, color: 'text-cyan-900 bg-cyan-100 border-cyan-300' };
       default:
-        return { label: 'The Expedition Choice', icon: Compass, color: 'text-violet-400 bg-violet-500/10 border-violet-500/20' };
+        return { label: 'The Expedition Choice', icon: Compass, color: 'text-amber-900 bg-amber-100 border-amber-300' };
     }
   };
 
-  return (
-    <div className="min-h-screen bg-[#080911] text-slate-100 flex flex-col font-sans selection:bg-violet-500/30 selection:text-violet-200">
-      
-      {/* Lamatic GenAI Ambient Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-gradient-to-b from-violet-600/10 via-indigo-600/10 to-transparent blur-[120px] pointer-events-none" />
+  const getCardHeaderColor = (idx: number) => {
+    const palettes = [
+      'bg-gradient-to-r from-amber-400 via-rose-400 to-rose-500 text-white',
+      'bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-500 text-white',
+      'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white',
+    ];
+    return palettes[idx % palettes.length];
+  };
 
-      {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-30 bg-[#0B0D17]/80 backdrop-blur-xl border-b border-white/10 shadow-lg">
+  return (
+    <div className="min-h-screen bg-[#FAF8F5] text-slate-800 flex flex-col font-sans">
+      
+      {/* Top Navigation Bar in ToyStore Friendly Clean Style */}
+      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b-2 border-slate-200/80 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 gap-4">
+          <div className="flex items-center justify-between h-20 gap-4">
             
             {/* Logo */}
             <div className="flex items-center gap-3 shrink-0">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-violet-600 to-indigo-500 p-0.5 shadow-md shadow-violet-500/20">
-                <div className="w-full h-full bg-[#0B0D17] rounded-[10px] flex items-center justify-center">
-                  <GraduationCap className="w-5 h-5 text-violet-400" />
-                </div>
+              <div className="w-12 h-12 rounded-2xl bg-rose-500 text-white flex items-center justify-center shadow-sm">
+                <GraduationCap className="w-7 h-7" />
               </div>
               <div>
-                <span className="font-extrabold text-white text-base font-serif-academic tracking-tight">
+                <span className="font-extrabold text-slate-900 text-xl font-brand tracking-tight">
                   Ruang Diskusi Akademik
                 </span>
-                <span className="hidden sm:inline-block ml-2 px-2 py-0.2 rounded-full text-[10px] font-semibold bg-violet-500/10 border border-violet-500/20 text-violet-300">
+                <span className="hidden sm:inline-block ml-2 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300">
                   Google Classroom Hub
                 </span>
               </div>
@@ -101,27 +103,27 @@ export const RoomListView: React.FC<RoomListViewProps> = ({
             {/* Search Input */}
             <div className="flex-1 max-w-md hidden md:block">
               <div className="relative">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5" />
+                <Search className="w-5 h-5 text-slate-400 absolute left-4 top-3" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Cari ruang kelas, pengampu, atau kode room..."
-                  className="w-full bg-white/[0.03] border border-white/10 rounded-xl py-1.5 pl-10 pr-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                  placeholder="Cari ruang kelas, nama pengampu, atau kode room..."
+                  className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl py-2.5 pl-12 pr-4 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-rose-400 focus:bg-white transition-all font-medium"
                 />
               </div>
             </div>
 
-            {/* User Controls & Actions */}
-            <div className="flex items-center gap-2 sm:gap-3">
+            {/* Actions */}
+            <div className="flex items-center gap-3">
               
               {/* AI Suite Trigger */}
               <button
                 type="button"
                 onClick={onOpenAISuite}
-                className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-violet-300 flex items-center gap-1.5 transition-all cursor-pointer"
+                className="px-4 py-2.5 rounded-2xl bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer shadow-xs"
               >
-                <Sparkles className="w-3.5 h-3.5 text-violet-400 animate-pulse" />
+                <Sparkles className="w-4 h-4 text-amber-600" />
                 <span className="hidden sm:inline">AI Studio</span>
               </button>
 
@@ -129,9 +131,9 @@ export const RoomListView: React.FC<RoomListViewProps> = ({
               <button
                 type="button"
                 onClick={onOpenJoinModal}
-                className="px-3.5 py-1.5 rounded-xl bg-violet-600/20 hover:bg-violet-600/30 border border-violet-500/30 text-xs font-semibold text-violet-200 flex items-center gap-1.5 transition-all cursor-pointer"
+                className="px-4 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer"
               >
-                <KeyRound className="w-3.5 h-3.5" />
+                <KeyRound className="w-4 h-4 text-slate-600" />
                 <span>Gabung Room</span>
               </button>
 
@@ -140,42 +142,35 @@ export const RoomListView: React.FC<RoomListViewProps> = ({
                 <button
                   type="button"
                   onClick={onOpenCreateModal}
-                  className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white text-xs font-semibold shadow-md flex items-center gap-1.5 transition-all cursor-pointer"
+                  className="px-4 py-2.5 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white text-xs sm:text-sm font-bold shadow-sm flex items-center gap-2 transition-all cursor-pointer"
                 >
-                  <PlusCircle className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Buat Room</span>
+                  <PlusCircle className="w-4 h-4" />
+                  <span className="hidden sm:inline">Buat Kelas Baru</span>
                 </button>
               )}
 
-              {/* User Avatar & Logout */}
-              <div className="flex items-center gap-2 pl-2 border-l border-white/10">
+              {/* User Profile & Logout */}
+              <div className="flex items-center gap-2.5 pl-3 border-l-2 border-slate-200">
                 <div className="text-right hidden sm:block">
-                  <div className="flex items-center justify-end gap-1.5">
-                    <span className="text-xs font-bold text-white max-w-[120px] truncate">
-                      {currentUser?.displayName}
-                    </span>
-                    {currentUser?.isAdmin && (
-                      <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                        ADMIN
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-[10px] text-slate-400 block capitalize">
+                  <span className="text-sm font-extrabold text-slate-900 block max-w-[130px] truncate">
+                    {currentUser?.displayName}
+                  </span>
+                  <span className="text-xs text-rose-600 font-bold capitalize">
                     {currentUser?.role === 'admin' ? 'Pengajar Utama' : currentUser?.role}
                   </span>
                 </div>
 
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-violet-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs ring-2 ring-white/10">
+                <div className="w-10 h-10 rounded-2xl bg-rose-500 text-white flex items-center justify-center font-black text-sm shadow-xs">
                   {currentUser?.displayName?.charAt(0) || 'U'}
                 </div>
 
                 <button
                   type="button"
                   onClick={logout}
-                  className="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all cursor-pointer"
+                  className="p-2.5 rounded-2xl text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-all cursor-pointer"
                   title="Keluar dari akun"
                 >
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-5 h-5" />
                 </button>
               </div>
 
@@ -187,35 +182,36 @@ export const RoomListView: React.FC<RoomListViewProps> = ({
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-1 space-y-8">
         
-        {/* Hero Banner: Classroom Hub with Lamatic Aesthetic */}
-        <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-violet-950/40 via-indigo-950/20 to-[#0F111E] border border-white/10 shadow-2xl relative overflow-hidden">
+        {/* Hero Banner: ToyStore Cheerful & Playful */}
+        <div className="p-8 sm:p-10 rounded-3xl bg-white border-2 border-slate-200/90 shadow-md relative overflow-hidden">
           <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <div className="max-w-2xl">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-violet-500/10 border border-violet-500/20 text-violet-300 flex items-center gap-1.5">
-                  <GraduationCap className="w-3.5 h-3.5 text-violet-400" />
-                  Google Classroom Style Discussion Suite
+            <div className="max-w-2xl space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="px-3.5 py-1 rounded-full text-xs font-extrabold bg-rose-100 text-rose-800 border border-rose-300 flex items-center gap-1.5">
+                  <PackageCheck className="w-4 h-4 text-rose-600" />
+                  Google Classroom Hybrid Suite
                 </span>
                 {currentUser?.isAdmin && (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 border border-amber-500/30 text-amber-300">
-                    Akun Pengajar: SnowPrince
+                  <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-amber-100 text-amber-900 border border-amber-300">
+                    Mode Pengajar: SnowPrince
                   </span>
                 )}
               </div>
 
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight font-serif-academic mb-2">
+              <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight font-brand">
                 Ruang Perkuliahan & Pemodelan Diskusi
               </h1>
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                Pilih ruang kelas untuk masuk ke materi, pengumpulan tugas, dan simulasi diskusi interaktif (The Expedition Choice, The Clash Arena, atau The Buzz Chamber).
+              
+              <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-medium">
+                Pilih ruang kelas untuk mengakses materi pembelajaran, pengumpulan tugas, dan simulasi 3 model diskusi hybrid (The Expedition Choice, The Clash Arena, atau The Buzz Chamber).
               </p>
             </div>
 
-            <div className="flex items-center gap-3 shrink-0">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
               <button
                 type="button"
                 onClick={onOpenJoinModal}
-                className="py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-white transition-all cursor-pointer"
+                className="py-3 px-5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs sm:text-sm border-2 border-slate-200 transition-all cursor-pointer"
               >
                 + Masukkan Kode Room
               </button>
@@ -223,7 +219,7 @@ export const RoomListView: React.FC<RoomListViewProps> = ({
                 <button
                   type="button"
                   onClick={onOpenCreateModal}
-                  className="py-2.5 px-4 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-semibold shadow-lg shadow-violet-600/30 transition-all cursor-pointer"
+                  className="py-3 px-6 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs sm:text-sm shadow-md transition-all cursor-pointer"
                 >
                   + Buat Kelas Baru
                 </button>
@@ -232,16 +228,16 @@ export const RoomListView: React.FC<RoomListViewProps> = ({
           </div>
         </div>
 
-        {/* Filter Pills (All / Expedition / Clash / Buzz) */}
-        <div className="flex items-center justify-between gap-4 pb-2 border-b border-white/5">
-          <div className="flex items-center gap-2 overflow-x-auto text-xs font-semibold">
+        {/* Filter Pills */}
+        <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b-2 border-slate-200/60">
+          <div className="flex items-center gap-2 overflow-x-auto text-xs sm:text-sm font-bold">
             <button
               type="button"
               onClick={() => setFilterScenario('all')}
-              className={`px-3 py-1.5 rounded-xl border transition-all cursor-pointer ${
+              className={`px-4 py-2 rounded-2xl border-2 transition-all cursor-pointer ${
                 filterScenario === 'all'
-                  ? 'bg-violet-600/30 border-violet-500 text-violet-200'
-                  : 'bg-white/[0.02] border-white/10 text-slate-400 hover:text-white'
+                  ? 'bg-rose-500 text-white border-rose-600 shadow-xs'
+                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
               }`}
             >
               Semua Ruang ({filteredRooms.length})
@@ -250,66 +246,66 @@ export const RoomListView: React.FC<RoomListViewProps> = ({
             <button
               type="button"
               onClick={() => setFilterScenario('expedition')}
-              className={`px-3 py-1.5 rounded-xl border transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-4 py-2 rounded-2xl border-2 transition-all cursor-pointer flex items-center gap-2 ${
                 filterScenario === 'expedition'
-                  ? 'bg-violet-600/30 border-violet-500 text-violet-200'
-                  : 'bg-white/[0.02] border-white/10 text-slate-400 hover:text-white'
+                  ? 'bg-amber-500 text-slate-950 border-amber-600 shadow-xs'
+                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
               }`}
             >
-              <Compass className="w-3.5 h-3.5 text-violet-400" />
+              <Compass className="w-4 h-4 text-amber-600" />
               <span>Model Ekspedisi</span>
             </button>
 
             <button
               type="button"
               onClick={() => setFilterScenario('clash')}
-              className={`px-3 py-1.5 rounded-xl border transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-4 py-2 rounded-2xl border-2 transition-all cursor-pointer flex items-center gap-2 ${
                 filterScenario === 'clash'
-                  ? 'bg-indigo-600/30 border-indigo-500 text-indigo-200'
-                  : 'bg-white/[0.02] border-white/10 text-slate-400 hover:text-white'
+                  ? 'bg-indigo-600 text-white border-indigo-700 shadow-xs'
+                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
               }`}
             >
-              <Swords className="w-3.5 h-3.5 text-indigo-400" />
+              <Swords className="w-4 h-4 text-indigo-400" />
               <span>Model Debat Clash</span>
             </button>
 
             <button
               type="button"
               onClick={() => setFilterScenario('buzz')}
-              className={`px-3 py-1.5 rounded-xl border transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-4 py-2 rounded-2xl border-2 transition-all cursor-pointer flex items-center gap-2 ${
                 filterScenario === 'buzz'
-                  ? 'bg-cyan-600/30 border-cyan-500 text-cyan-200'
-                  : 'bg-white/[0.02] border-white/10 text-slate-400 hover:text-white'
+                  ? 'bg-cyan-600 text-white border-cyan-700 shadow-xs'
+                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
               }`}
             >
-              <Flame className="w-3.5 h-3.5 text-cyan-400" />
+              <Flame className="w-4 h-4 text-cyan-400" />
               <span>Model Buzz Chamber</span>
             </button>
           </div>
 
-          <span className="text-xs text-slate-400 hidden sm:inline">
+          <span className="text-xs sm:text-sm font-bold text-slate-500 hidden sm:inline">
             Menampilkan {filteredRooms.length} Ruang Kelas
           </span>
         </div>
 
         {/* Empty state: If user has no rooms */}
         {myRooms.length === 0 && (
-          <div className="p-8 sm:p-12 rounded-3xl bg-[#0F111E] border border-white/10 text-center space-y-4">
-            <div className="w-14 h-14 rounded-2xl bg-violet-600/20 text-violet-400 flex items-center justify-center mx-auto">
-              <BookOpen className="w-7 h-7" />
+          <div className="p-10 sm:p-14 rounded-3xl bg-white border-2 border-slate-200 text-center space-y-4 shadow-sm">
+            <div className="w-16 h-16 rounded-3xl bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
+              <BookOpen className="w-8 h-8" />
             </div>
-            <div className="max-w-md mx-auto">
-              <h3 className="text-lg font-bold text-white mb-1">
+            <div className="max-w-md mx-auto space-y-1">
+              <h3 className="text-xl font-bold text-slate-900 font-brand">
                 Anda Belum Tergabung ke Ruang Kelas Tertentu
               </h3>
-              <p className="text-xs sm:text-sm text-slate-400">
+              <p className="text-sm text-slate-600">
                 Masukkan kode room dari pengampu Anda untuk bergabung, atau pilih salah satu kelas di bawah untuk langsung mencoba skenario diskusi.
               </p>
             </div>
             <button
               type="button"
               onClick={onOpenJoinModal}
-              className="py-2.5 px-6 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-semibold text-xs shadow-md transition-all cursor-pointer inline-flex items-center gap-2"
+              className="py-3 px-6 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-sm shadow-md transition-all cursor-pointer inline-flex items-center gap-2"
             >
               <KeyRound className="w-4 h-4" />
               <span>Gabung Kelas dengan Kode</span>
@@ -317,66 +313,66 @@ export const RoomListView: React.FC<RoomListViewProps> = ({
           </div>
         )}
 
-        {/* Google Classroom Grid Cards */}
+        {/* Google Classroom Grid Cards (ToyStore Retail Style) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredRooms.map((room) => {
+          {filteredRooms.map((room, idx) => {
             const scInfo = getScenarioInfo(room.discussionScenario);
             const ScIcon = scInfo.icon;
-            const isMember = room.members.includes(currentUser?.uid || '');
+            const headerColor = getCardHeaderColor(idx);
 
             return (
               <div
                 key={room.id}
                 onClick={() => onSelectRoom(room)}
-                className="group rounded-3xl bg-[#0F111E] border border-white/10 hover:border-violet-500/40 hover:shadow-2xl hover:shadow-violet-950/20 transition-all duration-300 overflow-hidden flex flex-col justify-between cursor-pointer"
+                className="group rounded-3xl bg-white border-2 border-slate-200/90 hover:border-rose-400 hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col justify-between cursor-pointer"
               >
                 {/* Classroom Header Banner */}
-                <div className={`p-6 bg-gradient-to-r ${room.bannerGradient} relative text-white space-y-2`}>
+                <div className={`p-6 sm:p-7 ${headerColor} relative space-y-2.5`}>
                   <div className="flex items-center justify-between">
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border backdrop-blur-md ${scInfo.color}`}>
-                      <ScIcon className="w-3 h-3" />
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-white/20 backdrop-blur-md text-white border border-white/30">
+                      <ScIcon className="w-3.5 h-3.5" />
                       <span>{scInfo.label}</span>
                     </span>
-                    <span className="font-mono text-xs px-2 py-0.5 rounded bg-black/40 text-violet-200 border border-white/10">
+                    <span className="font-mono text-xs px-2.5 py-1 rounded-xl bg-black/30 text-white font-bold border border-white/20">
                       {room.roomCode}
                     </span>
                   </div>
 
-                  <h3 className="text-base sm:text-lg font-bold font-serif-academic line-clamp-2 group-hover:text-violet-200 transition-colors">
+                  <h3 className="text-lg sm:text-xl font-bold font-brand line-clamp-2 leading-snug">
                     {room.name}
                   </h3>
 
-                  <p className="text-[11px] text-slate-300 font-medium">
+                  <p className="text-xs sm:text-sm text-white/90 font-bold">
                     {room.section}
                   </p>
 
-                  <div className="pt-2 text-xs text-slate-200 flex items-center justify-between border-t border-white/10">
+                  <div className="pt-2 text-xs sm:text-sm text-white/95 flex items-center justify-between border-t border-white/20 font-medium">
                     <span>Pengampu: {room.teacherName}</span>
-                    <span className="text-[10px] text-slate-300">{room.subject}</span>
+                    <span className="text-xs">{room.subject}</span>
                   </div>
                 </div>
 
                 {/* Body Content */}
                 <div className="p-6 space-y-4 flex-1 flex flex-col justify-between">
-                  <p className="text-xs text-slate-400 line-clamp-3 leading-relaxed">
+                  <p className="text-sm text-slate-600 line-clamp-3 leading-relaxed font-medium">
                     {room.description}
                   </p>
 
-                  {/* Metrics Bar: Members & Assignments */}
-                  <div className="pt-4 border-t border-white/5 flex items-center justify-between text-xs text-slate-400">
+                  {/* Metrics Bar */}
+                  <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs sm:text-sm font-bold text-slate-600">
                     <div className="flex items-center gap-1.5">
-                      <Users className="w-3.5 h-3.5 text-slate-500" />
-                      <span>{room.members.length} Mahasiswa</span>
+                      <Users className="w-4 h-4 text-slate-400" />
+                      <span>{room.members.length} Murid</span>
                     </div>
 
                     <div className="flex items-center gap-1.5">
-                      <UploadCloud className="w-3.5 h-3.5 text-violet-400" />
+                      <UploadCloud className="w-4 h-4 text-rose-500" />
                       <span>{room.assignments.length} Tugas</span>
                     </div>
 
-                    <span className="text-violet-400 font-semibold group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
+                    <span className="text-rose-500 font-extrabold group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
                       <span>Buka Room</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
+                      <ArrowRight className="w-4 h-4" />
                     </span>
                   </div>
                 </div>
@@ -389,14 +385,14 @@ export const RoomListView: React.FC<RoomListViewProps> = ({
       </main>
 
       {/* Footer */}
-      <footer className="w-full max-w-7xl mx-auto px-6 py-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+      <footer className="w-full max-w-7xl mx-auto px-6 py-8 border-t-2 border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs sm:text-sm text-slate-500 font-medium">
         <div>
           <span>Ruang Diskusi Akademik — Hybrid Learning & Multi-Scenario Classroom</span>
         </div>
-        <div className="flex items-center gap-4 text-slate-400">
-          <span>Admin Kredensial: SnowPrince</span>
+        <div className="flex items-center gap-4 text-slate-600 font-bold">
+          <span>Admin: SnowPrince</span>
           <span>•</span>
-          <span>Google Sign-In Ready</span>
+          <span>Google Sign-In</span>
           <span>•</span>
           <span>Express Backend AI</span>
         </div>

@@ -4,12 +4,13 @@
   body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     color: #1e293b;
-    background-color: #f8fafc;
+    background-color: #FAF8F5;
     -webkit-font-smoothing: antialiased;
   }
 
-  h1, h2, h3, .font-serif-academic {
-    font-family: 'Cinzel', serif, Georgia;
+  h1, h2, h3, h4, .font-serif-academic, .font-brand {
+    font-family: 'Fredoka', 'Outfit', system-ui, sans-serif;
+    letter-spacing: -0.01em;
   }
 
   code, pre, .font-mono {
@@ -17,18 +18,19 @@
   }
 }
 
-/* Custom scrollbar for academic papers and feeds */
+/* Warm ToyStore custom scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #F1EFEA;
+  border-radius: 8px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
+  background: #CBD5E1;
+  border-radius: 8px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #94A3B8;
 }

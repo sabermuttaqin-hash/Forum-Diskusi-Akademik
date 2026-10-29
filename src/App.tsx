@@ -67,9 +67,9 @@ function AcademicClassroomApp() {
   // 1. Loading Guard (rendered AFTER all hooks)
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#080911] flex flex-col items-center justify-center text-white font-sans">
-        <div className="w-10 h-10 border-3 border-violet-500/30 border-t-violet-500 rounded-full animate-spin mb-4" />
-        <p className="text-xs font-semibold tracking-widest uppercase font-mono text-violet-300">
+      <div className="min-h-screen bg-[#FAF8F5] flex flex-col items-center justify-center text-slate-900 font-sans">
+        <div className="w-12 h-12 border-4 border-[#FF5B37]/30 border-t-[#FF5B37] rounded-full animate-spin mb-4" />
+        <p className="text-sm font-bold tracking-wider text-slate-700 font-serif-academic">
           Memuat Ruang Diskusi Akademik...
         </p>
       </div>
@@ -82,7 +82,7 @@ function AcademicClassroomApp() {
   }
 
   return (
-    <div className="min-h-screen bg-[#080911] text-slate-100 font-sans">
+    <div className="min-h-screen bg-[#FAF8F5] text-slate-800 font-sans">
       {/* Either Room Detail View or Room Grid Hub */}
       {selectedRoom ? (
         <RoomDetailView
