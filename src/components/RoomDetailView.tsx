@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { CourseRoom, CourseMaterial, Assignment, Submission } from '../types';
+import { CourseRoom, CourseMaterial, Assignment, Submission, RoomForum } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { roomsService } from '../lib/rooms';
 import { ExpeditionChoiceScenario } from './scenarios/ExpeditionChoiceScenario';
 import { ClashArenaScenario } from './scenarios/ClashArenaScenario';
 import { BuzzChamberScenario } from './scenarios/BuzzChamberScenario';
 import { EditRoomModal } from './EditRoomModal';
+import { CreateForumModal } from './CreateForumModal';
 import { 
   ArrowLeft, 
   Copy, 
@@ -18,16 +19,19 @@ import {
   Compass, 
   Swords, 
   Flame, 
-  Building, 
-  Laptop, 
-  CheckCircle2, 
   Calendar, 
   Edit3,
   Trash2,
   X,
   Save,
   UserPlus,
-  BookOpen
+  BookOpen,
+  GraduationCap,
+  Layers,
+  Sparkles,
+  ChevronRight,
+  MessageSquare,
+  CheckCircle2
 } from 'lucide-react';
 
 interface RoomDetailViewProps {
@@ -40,10 +44,29 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
   const { currentUser } = useAuth();
   const isAdmin = currentUser?.isAdmin || currentUser?.uid === room.teacherId || currentUser?.role === 'admin' || currentUser?.role === 'lecturer';
 
-  const [activeTab, setActiveTab] = useState<'stream' | 'scenario' | 'assignments' | 'members'>('scenario');
+  // Ensure forums array exists or fallback to legacy scenario
+  const forums: RoomForum[] = room.forums && room.forums.length > 0
+    ? room.forums
+    : (room.scenarioData && room.discussionScenario ? [{
+        id: `forum_${room.id}_1`,
+        roomId: room.id,
+        title: `Forum Diskusi Utama: ${room.name}`,
+        description: room.description,
+        scenarioType: room.discussionScenario,
+        scenarioData: room.scenarioData,
+        createdAt: room.createdAt || new Date().toISOString(),
+        authorId: room.teacherId,
+        authorName: room.teacherName,
+        isActive: true
+      }] : []);
+
+  const [activeTab, setActiveTab] = useState<'scenario' | 'stream' | 'assignments' | 'members'>('scenario');
+  const [selectedForumId, setSelectedForumId] = useState<string | null>(null);
+  const [isCreateForumOpen, setIsCreateForumOpen] = useState(false);
+  const [isEditRoomOpen, setIsEditRoomOpen] = useState(false);
+
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
-  const [isEditRoomOpen, setIsEditRoomOpen] = useState(false);
 
   // Material creation state
   const [isAddingMaterial, setIsAddingMaterial] = useState(false);
@@ -64,6 +87,8 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
   // Invite member state
   const [inviteInput, setInviteInput] = useState('');
   const [inviteSuccessMsg, setInviteSuccessMsg] = useState<string | null>(null);
+
+  const activeForum = forums.find(f => f.id === selectedForumId);
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(room.roomCode);
@@ -116,15 +141,27 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
   };
 
   const handleDeleteMaterial = (materialId: string) => {
-    if (window.confirm('Hapus materi pembahasan ini dari ruang kelas?')) {
+    if (!isAdmin) return;
+    if (window.confirm('Yakin ingin menghapus materi ini dari kelas?')) {
       roomsService.deleteMaterial(room.id, materialId);
+      onRefreshRoom();
+    }
+  };
+
+  const handleDeleteForum = (forumId: string, forumTitle: string) => {
+    if (!isAdmin) return;
+    if (window.confirm(`Yakin ingin menghapus forum "${forumTitle}" dari kelas ini?`)) {
+      roomsService.deleteForum(room.id, forumId);
+      if (selectedForumId === forumId) {
+        setSelectedForumId(null);
+      }
       onRefreshRoom();
     }
   };
 
   const handleSubmitAssignment = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!submissionText.trim() || !currentUser) return;
+    if (!submissionText.trim() || !currentUser || !selectedAssignmentId) return;
 
     roomsService.submitAssignment(room.id, selectedAssignmentId, {
       assignmentId: selectedAssignmentId,
@@ -153,21 +190,18 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
     onRefreshRoom();
   };
 
-  const getScenarioBadge = () => {
-    switch (room.discussionScenario) {
+  const getModelBadge = (type: string) => {
+    switch (type) {
       case 'expedition':
-        return { label: 'The Expedition Choice', icon: Compass, color: 'text-amber-800 bg-amber-100 border-amber-300' };
+        return { label: 'The Expedition Choice', icon: Compass, color: 'text-violet-800 bg-violet-100 border-violet-300' };
       case 'clash':
-        return { label: 'The Clash Arena', icon: Swords, color: 'text-indigo-800 bg-indigo-100 border-indigo-300' };
+        return { label: 'The Clash Arena', icon: Swords, color: 'text-amber-800 bg-amber-100 border-amber-300' };
       case 'buzz':
-        return { label: 'The Buzz Chamber', icon: Flame, color: 'text-cyan-800 bg-cyan-100 border-cyan-300' };
+        return { label: 'The Buzz Chamber', icon: Flame, color: 'text-[#FF5B37] bg-[#FFEDE7] border-[#FFCCBC]' };
       default:
-        return { label: 'The Expedition Choice', icon: Compass, color: 'text-amber-800 bg-amber-100 border-amber-300' };
+        return { label: 'The Expedition Choice', icon: Compass, color: 'text-violet-800 bg-violet-100 border-violet-300' };
     }
   };
-
-  const scenarioBadge = getScenarioBadge();
-  const ScenarioIcon = scenarioBadge.icon;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 font-sans">
@@ -191,18 +225,27 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
           <div className="space-y-3 max-w-2xl">
             <div className="flex flex-wrap items-center gap-2.5">
-              <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs sm:text-sm font-extrabold border ${scenarioBadge.color}`}>
-                <ScenarioIcon className="w-4 h-4" />
-                <span>Model: {scenarioBadge.label}</span>
+              {/* Jenjang Badge */}
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-extrabold bg-[#FFEDE7] text-[#FF5B37] border border-[#FFCCBC]">
+                <GraduationCap className="w-4 h-4" />
+                <span>Jenjang: {room.jenjang || 'Perguruan Tinggi'}</span>
               </span>
-              <span className="text-xs sm:text-sm text-slate-700 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 font-bold">
+
+              {/* Subject Badge */}
+              <span className="text-xs sm:text-sm text-slate-800 px-3.5 py-1.5 rounded-full bg-slate-100 border border-slate-200 font-bold">
+                {room.subject}
+              </span>
+
+              {/* Section */}
+              <span className="text-xs sm:text-sm text-slate-600 px-3 py-1 rounded-full bg-slate-50 border border-slate-200 font-medium">
                 {room.section}
               </span>
+
               {isAdmin && (
                 <button
                   type="button"
                   onClick={() => setIsEditRoomOpen(true)}
-                  className="px-3.5 py-1 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
+                  className="px-3.5 py-1.5 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
                 >
                   <Edit3 className="w-3.5 h-3.5 text-amber-700" />
                   <span>Edit Info Kelas</span>
@@ -215,7 +258,7 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
             </h1>
 
             <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-medium">
-              Pengampu: <strong className="text-slate-900 font-bold">{room.teacherName}</strong> • Bidang: {room.subject}
+              Pengampu: <strong className="text-slate-900 font-bold">{room.teacherName}</strong> • {forums.length} Forum Diskusi Tersedia
             </p>
           </div>
 
@@ -254,15 +297,17 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
       <div className="flex bg-white p-2 rounded-3xl border border-slate-200 overflow-x-auto text-sm font-bold shadow-xs gap-1.5">
         <button
           type="button"
-          onClick={() => setActiveTab('scenario')}
+          onClick={() => {
+            setActiveTab('scenario');
+          }}
           className={`py-3 px-5 rounded-2xl flex items-center gap-2.5 whitespace-nowrap transition-all cursor-pointer ${
             activeTab === 'scenario'
-              ? 'bg-rose-500 text-white shadow-sm'
+              ? 'bg-[#FF5B37] text-white shadow-sm'
               : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
           }`}
         >
-          <ScenarioIcon className="w-4 h-4" />
-          <span>Skenario Diskusi ({scenarioBadge.label})</span>
+          <Layers className="w-4 h-4" />
+          <span>Forum Diskusi ({forums.length})</span>
         </button>
 
         <button
@@ -270,7 +315,7 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
           onClick={() => setActiveTab('stream')}
           className={`py-3 px-5 rounded-2xl flex items-center gap-2.5 whitespace-nowrap transition-all cursor-pointer ${
             activeTab === 'stream'
-              ? 'bg-rose-500 text-white shadow-sm'
+              ? 'bg-[#FF5B37] text-white shadow-sm'
               : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
           }`}
         >
@@ -283,7 +328,7 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
           onClick={() => setActiveTab('assignments')}
           className={`py-3 px-5 rounded-2xl flex items-center gap-2.5 whitespace-nowrap transition-all cursor-pointer ${
             activeTab === 'assignments'
-              ? 'bg-rose-500 text-white shadow-sm'
+              ? 'bg-[#FF5B37] text-white shadow-sm'
               : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
           }`}
         >
@@ -296,7 +341,7 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
           onClick={() => setActiveTab('members')}
           className={`py-3 px-5 rounded-2xl flex items-center gap-2.5 whitespace-nowrap transition-all cursor-pointer ${
             activeTab === 'members'
-              ? 'bg-rose-500 text-white shadow-sm'
+              ? 'bg-[#FF5B37] text-white shadow-sm'
               : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
           }`}
         >
@@ -305,17 +350,225 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
         </button>
       </div>
 
-      {/* TAB 1: Skenario Diskusi Interaktif */}
+      {/* TAB 1: Multi-Forum Diskusi Interaktif */}
       {activeTab === 'scenario' && (
-        <div>
-          {room.discussionScenario === 'expedition' && (
-            <ExpeditionChoiceScenario room={room} onUpdateRoom={onRefreshRoom} />
-          )}
-          {room.discussionScenario === 'clash' && (
-            <ClashArenaScenario room={room} onUpdateRoom={onRefreshRoom} />
-          )}
-          {room.discussionScenario === 'buzz' && (
-            <BuzzChamberScenario room={room} onUpdateRoom={onRefreshRoom} />
+        <div className="space-y-6">
+          {/* Sub-view: When NO forum is selected -> Show List of Forums */}
+          {!activeForum ? (
+            <div className="space-y-6">
+              
+              {/* Header with "+ Buat Forum Baru" button for Guru */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 sm:p-7 rounded-3xl bg-white border border-slate-200 shadow-xs">
+                <div>
+                  <h3 className="text-xl sm:text-2xl font-black text-slate-900 font-brand flex items-center gap-2">
+                    <Layers className="w-6 h-6 text-[#FF5B37]" />
+                    <span>Daftar Forum Diskusi di Ruang Kelas Ini</span>
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-600 mt-1">
+                    Setiap forum dapat menggunakan model diskusi berbeda (The Expedition Choice, Clash Arena, Buzz Chamber) dengan tema yang disesuaikan oleh pengampu.
+                  </p>
+                </div>
+
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => setIsCreateForumOpen(true)}
+                    className="px-5 py-3 rounded-2xl bg-[#FF5B37] hover:bg-[#E84E2C] text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-md shadow-[#FF5B37]/25 transition-all cursor-pointer shrink-0"
+                  >
+                    <PlusCircle className="w-5 h-5" />
+                    <span>+ Buat Forum Diskusi Baru</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Forum Cards Grid */}
+              {forums.length === 0 ? (
+                <div className="p-12 text-center rounded-3xl bg-white border-2 border-dashed border-slate-200 space-y-4">
+                  <div className="w-16 h-16 rounded-3xl bg-[#FFEDE7] text-[#FF5B37] flex items-center justify-center mx-auto">
+                    <Layers className="w-8 h-8" />
+                  </div>
+                  <h4 className="text-lg font-bold text-slate-900">Belum Ada Forum Diskusi di Kelas Ini</h4>
+                  <p className="text-sm text-slate-500 max-w-md mx-auto">
+                    Pengajar belum menambahkan forum diskusi. Guru dapat menekan tombol <strong>+ Buat Forum Diskusi Baru</strong> di atas untuk membuat sesi diskusi pertama.
+                  </p>
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => setIsCreateForumOpen(true)}
+                      className="px-6 py-2.5 rounded-2xl bg-[#FF5B37] text-white font-bold text-sm shadow-md cursor-pointer"
+                    >
+                      Buat Forum Sekarang
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {forums.map((forum, index) => {
+                    const badge = getModelBadge(forum.scenarioType);
+                    const ModelIcon = badge.icon;
+
+                    let summaryText = '';
+                    if (forum.scenarioType === 'expedition') {
+                      const count = forum.scenarioData?.expeditionTopics?.length || 0;
+                      summaryText = `${count} Jalur Topik Hybrid (Meja Fisik vs Daring)`;
+                    } else if (forum.scenarioType === 'clash') {
+                      summaryText = `Debat Pro vs Kontra: "${forum.scenarioData?.clashTopic || 'Mosi Terbuka'}"`;
+                    } else if (forum.scenarioType === 'buzz') {
+                      const stCount = forum.scenarioData?.buzzStations?.length || 0;
+                      summaryText = `Blitz 5 Menit: ${stCount} Stasiun Tantangan Ide`;
+                    }
+
+                    return (
+                      <div
+                        key={forum.id}
+                        className="p-6 rounded-3xl bg-white border-2 border-slate-200/90 shadow-sm hover:shadow-md hover:border-[#FF5B37]/40 transition-all flex flex-col justify-between space-y-5"
+                      >
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black border ${badge.color}`}>
+                              <ModelIcon className="w-3.5 h-3.5" />
+                              <span>{badge.label}</span>
+                            </span>
+                            <span className="text-[11px] font-bold text-slate-400">
+                              #{index + 1}
+                            </span>
+                          </div>
+
+                          <h4 className="text-base sm:text-lg font-black text-slate-900 font-serif-academic leading-snug">
+                            {forum.title}
+                          </h4>
+
+                          <p className="text-xs sm:text-sm text-slate-600 line-clamp-2 leading-relaxed">
+                            {forum.description}
+                          </p>
+
+                          <div className="p-3 rounded-2xl bg-[#FAF8F5] border border-[#EFE9E1] text-xs text-slate-700 font-medium">
+                            {summaryText}
+                          </div>
+                        </div>
+
+                        <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                          <span className="text-[11px] text-slate-400 font-medium">
+                            Oleh: {forum.authorName}
+                          </span>
+
+                          <div className="flex items-center gap-2">
+                            {isAdmin && (
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteForum(forum.id, forum.title)}
+                                className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all cursor-pointer"
+                                title="Hapus forum ini"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() => setSelectedForumId(forum.id)}
+                              className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-[#FF5B37] text-white text-xs sm:text-sm font-bold flex items-center gap-1 transition-all cursor-pointer shadow-xs"
+                            >
+                              <span>Buka Forum</span>
+                              <ChevronRight className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+            </div>
+          ) : (
+            /* Sub-view: When a forum IS selected -> Show the Interactive Discussion Model */
+            <div className="space-y-6">
+              
+              {/* Forum Navigation Breadcrumb Bar */}
+              <div className="p-4 sm:p-5 rounded-3xl bg-white border-2 border-slate-200 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedForumId(null)}
+                    className="px-4 py-2 rounded-2xl bg-[#FAF8F5] hover:bg-slate-100 border border-[#E5DFD5] text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-2 transition-all cursor-pointer"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    <span>Daftar Forum ({forums.length})</span>
+                  </button>
+
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-black border ${getModelBadge(activeForum.scenarioType).color}`}>
+                        {activeForum.scenarioType.toUpperCase()}
+                      </span>
+                      <h3 className="text-base sm:text-lg font-black text-slate-900 font-serif-academic truncate max-w-md">
+                        {activeForum.title}
+                      </h3>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                  {/* Quick Forum Switcher if multiple exist */}
+                  {forums.length > 1 && (
+                    <select
+                      value={activeForum.id}
+                      onChange={(e) => setSelectedForumId(e.target.value)}
+                      className="bg-[#FAF8F5] border border-[#E5DFD5] rounded-2xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF5B37]/30"
+                    >
+                      {forums.map((f, i) => (
+                        <option key={f.id} value={f.id}>
+                          Forum #{i + 1}: {f.title}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => setIsCreateForumOpen(true)}
+                      className="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-[#FF5B37] text-white text-xs font-bold transition-all cursor-pointer shadow-xs"
+                    >
+                      + Forum Baru
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Renders the Scenario for this Active Forum */}
+              <div>
+                {activeForum.scenarioType === 'expedition' && (
+                  <ExpeditionChoiceScenario
+                    room={room}
+                    forumId={activeForum.id}
+                    forumTitle={activeForum.title}
+                    scenarioData={activeForum.scenarioData}
+                    onUpdateRoom={onRefreshRoom}
+                  />
+                )}
+                {activeForum.scenarioType === 'clash' && (
+                  <ClashArenaScenario
+                    room={room}
+                    forumId={activeForum.id}
+                    forumTitle={activeForum.title}
+                    scenarioData={activeForum.scenarioData}
+                    onUpdateRoom={onRefreshRoom}
+                  />
+                )}
+                {activeForum.scenarioType === 'buzz' && (
+                  <BuzzChamberScenario
+                    room={room}
+                    forumId={activeForum.id}
+                    forumTitle={activeForum.title}
+                    scenarioData={activeForum.scenarioData}
+                    onUpdateRoom={onRefreshRoom}
+                  />
+                )}
+              </div>
+
+            </div>
           )}
         </div>
       )}
@@ -743,6 +996,17 @@ export const RoomDetailView: React.FC<RoomDetailViewProps> = ({ room, onBack, on
         onClose={() => setIsEditRoomOpen(false)}
         onRoomUpdated={() => {
           onRefreshRoom();
+        }}
+      />
+
+      {/* CREATE FORUM MODAL FOR GURU */}
+      <CreateForumModal
+        isOpen={isCreateForumOpen}
+        onClose={() => setIsCreateForumOpen(false)}
+        room={room}
+        onForumCreated={(newForum) => {
+          onRefreshRoom();
+          setSelectedForumId(newForum.id);
         }}
       />
 

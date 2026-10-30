@@ -1,16 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { CourseRoom, ScenarioType } from '../types';
+import { CourseRoom, JenjangType } from '../types';
 import { roomsService } from '../lib/rooms';
 import { 
   X, 
   Edit3, 
-  Compass, 
-  Swords, 
-  Flame, 
   Palette, 
   Save, 
   CheckCircle2, 
-  AlertCircle 
+  GraduationCap
 } from 'lucide-react';
 
 interface EditRoomModalProps {
@@ -20,6 +17,14 @@ interface EditRoomModalProps {
   onRoomUpdated: (updatedRoom: CourseRoom) => void;
 }
 
+const JENJANG_OPTIONS: { id: JenjangType; label: string }[] = [
+  { id: 'SD', label: 'SD / Madrasah' },
+  { id: 'SMP', label: 'SMP / MTs' },
+  { id: 'SMA/SMK', label: 'SMA / SMK / MA' },
+  { id: 'Perguruan Tinggi', label: 'Perguruan Tinggi' },
+  { id: 'Umum', label: 'Umum' },
+];
+
 export const EditRoomModal: React.FC<EditRoomModalProps> = ({
   room,
   isOpen,
@@ -27,21 +32,21 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
   onRoomUpdated
 }) => {
   const [name, setName] = useState(room.name);
+  const [jenjang, setJenjang] = useState<JenjangType>((room.jenjang as JenjangType) || 'Perguruan Tinggi');
   const [section, setSection] = useState(room.section);
   const [subject, setSubject] = useState(room.subject);
   const [description, setDescription] = useState(room.description);
   const [bannerGradient, setBannerGradient] = useState(room.bannerGradient || 'from-[#FF5B37] via-[#FF8A65] to-[#FFA726]');
-  const [scenario, setScenario] = useState<ScenarioType>(room.discussionScenario);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       setName(room.name);
+      setJenjang((room.jenjang as JenjangType) || 'Perguruan Tinggi');
       setSection(room.section);
       setSubject(room.subject);
       setDescription(room.description);
       setBannerGradient(room.bannerGradient || 'from-[#FF5B37] via-[#FF8A65] to-[#FFA726]');
-      setScenario(room.discussionScenario);
       setSuccessMsg(null);
     }
   }, [isOpen, room]);
@@ -54,11 +59,11 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
 
     const updated = roomsService.updateRoom(room.id, {
       name: name.trim(),
+      jenjang,
       section: section.trim(),
       subject: subject.trim(),
       description: description.trim(),
-      bannerGradient,
-      discussionScenario: scenario
+      bannerGradient
     });
 
     if (updated) {
@@ -85,7 +90,7 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
                 Edit Informasi Ruang Kelas (Guru)
               </h3>
               <p className="text-xs text-slate-500 font-medium">
-                Perbarui nama, silabus, bidang studi, atau model diskusi kelas ini
+                Perbarui nama, jenjang pendidikan, subjek, atau deskripsi ruang kelas
               </p>
             </div>
           </div>
@@ -110,7 +115,7 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
 
           <div>
             <label className="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5">
-              Nama Mata Kuliah / Ruang Kelas <span className="text-[#FF5B37]">*</span>
+              Nama Ruang Kelas <span className="text-[#FF5B37]">*</span>
             </label>
             <input
               type="text"
@@ -120,6 +125,30 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
               placeholder="Contoh: Kajian Wacana Kritis & Linguistik Terapan"
               className="w-full bg-[#FAF8F5] border border-[#E5DFD5] rounded-2xl px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FF5B37]/30 focus:border-[#FF5B37]"
             />
+          </div>
+
+          {/* Jenjang Selector */}
+          <div>
+            <label className="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
+              <GraduationCap className="w-4 h-4 text-[#FF5B37]" />
+              <span>Jenjang Pendidikan</span>
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {JENJANG_OPTIONS.map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setJenjang(opt.id)}
+                  className={`p-2.5 rounded-xl border text-center text-xs font-bold transition-all cursor-pointer ${
+                    jenjang === opt.id
+                      ? 'bg-[#FFEDE7] border-[#FF5B37] ring-2 ring-[#FF5B37]/20 text-slate-900'
+                      : 'bg-[#FAF8F5] border-[#EFE9E1] text-slate-600 hover:border-slate-300'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -160,56 +189,6 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
               placeholder="Tuliskan petunjuk pembelajaran atau silabus singkat..."
               className="w-full bg-[#FAF8F5] border border-[#E5DFD5] rounded-2xl p-3.5 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FF5B37]/30 resize-none"
             />
-          </div>
-
-          {/* Model Diskusi Selection */}
-          <div>
-            <label className="block text-xs sm:text-sm font-bold text-slate-800 mb-2">
-              Model Diskusi Kelas:
-            </label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-              <button
-                type="button"
-                onClick={() => setScenario('expedition')}
-                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
-                  scenario === 'expedition'
-                    ? 'bg-amber-50 border-amber-400 ring-2 ring-amber-200 text-slate-900 font-bold'
-                    : 'bg-[#FAF8F5] border-[#EFE9E1] text-slate-600 hover:border-slate-300'
-                }`}
-              >
-                <Compass className="w-4 h-4 text-amber-600 mb-1" />
-                <div className="text-xs font-bold">The Expedition</div>
-                <div className="text-[10px] text-slate-500 font-normal">5 Tema berkuota hybrid</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setScenario('clash')}
-                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
-                  scenario === 'clash'
-                    ? 'bg-indigo-50 border-indigo-400 ring-2 ring-indigo-200 text-slate-900 font-bold'
-                    : 'bg-[#FAF8F5] border-[#EFE9E1] text-slate-600 hover:border-slate-300'
-                }`}
-              >
-                <Swords className="w-4 h-4 text-indigo-600 mb-1" />
-                <div className="text-xs font-bold">The Clash Arena</div>
-                <div className="text-[10px] text-slate-500 font-normal">Debat Pro vs Kontra</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setScenario('buzz')}
-                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
-                  scenario === 'buzz'
-                    ? 'bg-rose-50 border-rose-400 ring-2 ring-rose-200 text-slate-900 font-bold'
-                    : 'bg-[#FAF8F5] border-[#EFE9E1] text-slate-600 hover:border-slate-300'
-                }`}
-              >
-                <Flame className="w-4 h-4 text-[#FF5B37] mb-1" />
-                <div className="text-xs font-bold">The Buzz Chamber</div>
-                <div className="text-[10px] text-slate-500 font-normal">Blitz ide 5 menit</div>
-              </button>
-            </div>
           </div>
 
           {/* Banner Palette */}

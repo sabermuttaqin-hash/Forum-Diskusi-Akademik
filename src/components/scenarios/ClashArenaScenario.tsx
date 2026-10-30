@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CourseRoom, ClashBulletChat } from '../../types';
+import { CourseRoom, ClashBulletChat, RoomScenarioData } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { roomsService } from '../../lib/rooms';
 import { 
@@ -8,25 +8,43 @@ import {
   ThumbsUp, 
   Mic, 
   Laptop, 
-  BarChart3,
-  Zap,
-  CheckCircle2,
-  AlertTriangle
+  BarChart3, 
+  Zap, 
+  CheckCircle2, 
+  AlertTriangle 
 } from 'lucide-react';
 
 interface ClashArenaScenarioProps {
   room: CourseRoom;
+  forumId?: string;
+  forumTitle?: string;
+  scenarioData?: RoomScenarioData;
   onUpdateRoom?: () => void;
 }
 
-export const ClashArenaScenario: React.FC<ClashArenaScenarioProps> = ({ room, onUpdateRoom }) => {
+export const ClashArenaScenario: React.FC<ClashArenaScenarioProps> = ({ 
+  room, 
+  forumId, 
+  forumTitle, 
+  scenarioData: propScenarioData, 
+  onUpdateRoom 
+}) => {
   const { currentUser } = useAuth();
 
-  const scenario = room.scenarioData;
+  const scenario: RoomScenarioData = propScenarioData || room.scenarioData || { type: 'clash' };
   const proMembers = scenario.clashProMembers || [];
   const contraMembers = scenario.clashContraMembers || [];
   const bulletChats: ClashBulletChat[] = scenario.clashBulletChats || [];
   const votes = scenario.clashVotes || { pro: 15, contra: 12, userVotes: {} };
+
+  const saveScenario = (updated: any) => {
+    if (forumId) {
+      roomsService.updateForumScenarioData(room.id, forumId, updated);
+    } else {
+      roomsService.updateScenarioData(room.id, updated);
+    }
+    if (onUpdateRoom) onUpdateRoom();
+  };
 
   const [bulletMessage, setBulletMessage] = useState('');
   const [isFactCheck, setIsFactCheck] = useState(false);
@@ -57,13 +75,11 @@ export const ClashArenaScenario: React.FC<ClashArenaScenarioProps> = ({ room, on
       setMySide('contra');
     }
 
-    roomsService.updateScenarioData(room.id, {
+    saveScenario({
       ...scenario,
       clashProMembers: updatedPro,
       clashContraMembers: updatedContra
     });
-
-    if (onUpdateRoom) onUpdateRoom();
   };
 
   const handleCancelSide = () => {
@@ -71,12 +87,11 @@ export const ClashArenaScenario: React.FC<ClashArenaScenarioProps> = ({ room, on
     let updatedPro = proMembers.filter(m => m.userId !== currentUser.uid);
     let updatedContra = contraMembers.filter(m => m.userId !== currentUser.uid);
     setMySide('neutral');
-    roomsService.updateScenarioData(room.id, {
+    saveScenario({
       ...scenario,
       clashProMembers: updatedPro,
       clashContraMembers: updatedContra
     });
-    if (onUpdateRoom) onUpdateRoom();
   };
 
   const handleSendBullet = (e: React.FormEvent) => {
@@ -95,14 +110,13 @@ export const ClashArenaScenario: React.FC<ClashArenaScenarioProps> = ({ room, on
 
     const updatedChats = [newChat, ...bulletChats];
 
-    roomsService.updateScenarioData(room.id, {
+    saveScenario({
       ...scenario,
       clashBulletChats: updatedChats
     });
 
     setBulletMessage('');
     setIsFactCheck(false);
-    if (onUpdateRoom) onUpdateRoom();
   };
 
   const handleSlidoVote = (targetSide: 'pro' | 'contra') => {
@@ -122,12 +136,10 @@ export const ClashArenaScenario: React.FC<ClashArenaScenarioProps> = ({ room, on
     userVotes[currentUser.uid] = targetSide;
     currentVotes.userVotes = userVotes;
 
-    roomsService.updateScenarioData(room.id, {
+    saveScenario({
       ...scenario,
       clashVotes: currentVotes
     });
-
-    if (onUpdateRoom) onUpdateRoom();
   };
 
   const totalVotes = (votes.pro || 0) + (votes.contra || 0);

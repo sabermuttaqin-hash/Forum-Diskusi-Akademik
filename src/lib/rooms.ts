@@ -4,23 +4,25 @@ import {
   Assignment, 
   Submission, 
   RoomScenarioData, 
-  AcademicUser 
+  AcademicUser,
+  RoomForum
 } from '../types';
 import { db } from './firebase';
 import { doc, getDoc, setDoc, onSnapshot, collection, query, updateDoc } from 'firebase/firestore';
 
-const LOCAL_ROOMS_KEY = 'akademik_course_rooms_v2';
+const LOCAL_ROOMS_KEY = 'akademik_course_rooms_v4';
 
 export const INITIAL_SEED_ROOMS: CourseRoom[] = [
   {
     id: 'room_expedition_1',
     name: 'Kajian Wacana Kritis & Linguistik Terapan',
+    jenjang: 'Perguruan Tinggi',
     section: 'Kelas Reguler A - Semester Ganjil',
     subject: 'Linguistik & Filsafat Bahasa',
     roomCode: 'EXP890',
     teacherId: 'admin_snowprince',
     teacherName: 'SnowPrince (Dosen Pengampu)',
-    description: 'Ruang perkuliahan interaktif dengan model diskusi hybrid "The Expedition Choice". Mahasiswa memilih 1 dari 5 topik ekspedisi ilmiah dan berkolaborasi dalam tim zona fisik/daring.',
+    description: 'Ruang perkuliahan interaktif dengan model diskusi hybrid. Dosen dan mahasiswa dapat membuat forum diskusi dengan beragam model seperti The Expedition Choice, Clash Arena, dan Buzz Chamber.',
     bannerGradient: 'from-violet-900 via-indigo-900 to-slate-950',
     discussionScenario: 'expedition',
     members: ['admin_snowprince', 'user_student_1', 'user_student_2', 'user_student_3'],
@@ -432,14 +434,42 @@ export const INITIAL_SEED_ROOMS: CourseRoom[] = [
 export const roomsService = {
   getRooms(): CourseRoom[] {
     const raw = localStorage.getItem(LOCAL_ROOMS_KEY);
+    let rooms = INITIAL_SEED_ROOMS;
     if (raw) {
       try {
-        return JSON.parse(raw);
+        rooms = JSON.parse(raw);
       } catch (e) {
         console.error('Failed to parse cached rooms', e);
       }
     }
-    return INITIAL_SEED_ROOMS;
+
+    // Ensure every room has jenjang and forums array
+    return rooms.map(r => {
+      let forums = r.forums;
+      if (!forums || forums.length === 0) {
+        if (r.scenarioData && r.discussionScenario) {
+          forums = [{
+            id: `forum_${r.id}_1`,
+            roomId: r.id,
+            title: `Forum Diskusi: ${r.name}`,
+            description: r.description,
+            scenarioType: r.discussionScenario,
+            scenarioData: r.scenarioData,
+            createdAt: r.createdAt || new Date().toISOString(),
+            authorId: r.teacherId,
+            authorName: r.teacherName,
+            isActive: true
+          }];
+        } else {
+          forums = [];
+        }
+      }
+      return {
+        ...r,
+        jenjang: r.jenjang || 'Perguruan Tinggi',
+        forums
+      };
+    });
   },
 
   saveRooms(rooms: CourseRoom[]) {
@@ -459,7 +489,7 @@ export const roomsService = {
           const list: CourseRoom[] = [];
           snapshot.forEach((d) => list.push({ ...d.data(), id: d.id } as CourseRoom));
           this.saveRooms(list);
-          onUpdate(list);
+          onUpdate(this.getRooms());
         } else {
           onUpdate(this.getRooms());
         }
@@ -483,6 +513,8 @@ export const roomsService = {
     const newRoom: CourseRoom = {
       ...roomData,
       id,
+      jenjang: roomData.jenjang || 'Perguruan Tinggi',
+      forums: roomData.forums || [],
       createdAt: new Date().toISOString(),
       members: [roomData.teacherId],
       memberProfiles: [
@@ -681,9 +713,9 @@ export const roomsService = {
   cancelTopicSelection(roomId: string, userId: string) {
     const rooms = this.getRooms();
     const rIdx = rooms.findIndex(r => r.id === roomId);
-    if (rIdx === -1) return;
+    if (rIdx === -1 || !rooms[rIdx].scenarioData) return;
 
-    const scenario = { ...rooms[rIdx].scenarioData };
+    const scenario: RoomScenarioData = { ...rooms[rIdx].scenarioData! };
     if (scenario.expeditionTopics) {
       scenario.expeditionTopics = scenario.expeditionTopics.map(t => ({
         ...t,
@@ -709,9 +741,9 @@ export const roomsService = {
   removeMemberFromTopic(roomId: string, topicId: string, userId: string) {
     const rooms = this.getRooms();
     const rIdx = rooms.findIndex(r => r.id === roomId);
-    if (rIdx === -1) return;
+    if (rIdx === -1 || !rooms[rIdx].scenarioData) return;
 
-    const scenario = { ...rooms[rIdx].scenarioData };
+    const scenario: RoomScenarioData = { ...rooms[rIdx].scenarioData! };
     if (scenario.expeditionTopics) {
       scenario.expeditionTopics = scenario.expeditionTopics.map(t => {
         if (t.id === topicId) {
@@ -733,19 +765,23 @@ export const roomsService = {
     if (rIdx === -1) return;
 
     const scenario = rooms[rIdx].scenarioData;
-    if (!scenario.expeditionTopics) return;
+    if (!scenario || !scenario.expeditionTopics) return;
 
     const tIdx = scenario.expeditionTopics.findIndex(t => t.id === topicId);
     if (tIdx === -1) return;
 
-    scenario.expeditionTopics[tIdx] = {
-      ...scenario.expeditionTopics[tIdx],
+    const updatedTopics = [...scenario.expeditionTopics];
+    updatedTopics[tIdx] = {
+      ...updatedTopics[tIdx],
       maxQuota,
       offlineQuota,
       onlineQuota
     };
 
-    this.updateScenarioData(roomId, scenario);
+    this.updateScenarioData(roomId, {
+      ...scenario,
+      expeditionTopics: updatedTopics
+    });
   },
 
   updateScenarioData(roomId: string, scenarioData: RoomScenarioData) {
@@ -759,5 +795,183 @@ export const roomsService = {
     try {
       updateDoc(doc(db, 'rooms', roomId), { scenarioData }).catch(() => {});
     } catch {}
+  },
+
+  createForum(roomId: string, forumData: Omit<RoomForum, 'id' | 'createdAt'>): RoomForum {
+    const rooms = this.getRooms();
+    const idx = rooms.findIndex(r => r.id === roomId);
+    if (idx === -1) throw new Error('Ruang kelas tidak ditemukan');
+
+    const forumId = `forum_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    const newForum: RoomForum = {
+      ...forumData,
+      id: forumId,
+      createdAt: new Date().toISOString()
+    };
+
+    if (!rooms[idx].forums) {
+      rooms[idx].forums = [];
+    }
+    rooms[idx].forums.unshift(newForum);
+    this.saveRooms(rooms);
+
+    try {
+      updateDoc(doc(db, 'rooms', roomId), { forums: rooms[idx].forums }).catch(() => {});
+    } catch {}
+
+    return newForum;
+  },
+
+  deleteForum(roomId: string, forumId: string) {
+    const rooms = this.getRooms();
+    const idx = rooms.findIndex(r => r.id === roomId);
+    if (idx === -1) return;
+
+    if (rooms[idx].forums) {
+      rooms[idx].forums = rooms[idx].forums.filter(f => f.id !== forumId);
+      this.saveRooms(rooms);
+
+      try {
+        updateDoc(doc(db, 'rooms', roomId), { forums: rooms[idx].forums }).catch(() => {});
+      } catch {}
+    }
+  },
+
+  updateForum(roomId: string, forumId: string, data: Partial<RoomForum>) {
+    const rooms = this.getRooms();
+    const idx = rooms.findIndex(r => r.id === roomId);
+    if (idx === -1) return;
+
+    if (rooms[idx].forums) {
+      const fIdx = rooms[idx].forums.findIndex(f => f.id === forumId);
+      if (fIdx !== -1) {
+        rooms[idx].forums[fIdx] = {
+          ...rooms[idx].forums[fIdx],
+          ...data,
+          updatedAt: new Date().toISOString()
+        };
+        this.saveRooms(rooms);
+        try {
+          updateDoc(doc(db, 'rooms', roomId), { forums: rooms[idx].forums }).catch(() => {});
+        } catch {}
+      }
+    }
+  },
+
+  updateForumScenarioData(roomId: string, forumId: string, scenarioData: RoomScenarioData) {
+    const rooms = this.getRooms();
+    const idx = rooms.findIndex(r => r.id === roomId);
+    if (idx === -1) return;
+
+    if (rooms[idx].forums) {
+      const fIdx = rooms[idx].forums.findIndex(f => f.id === forumId);
+      if (fIdx !== -1) {
+        rooms[idx].forums[fIdx].scenarioData = scenarioData;
+        rooms[idx].forums[fIdx].updatedAt = new Date().toISOString();
+      }
+    }
+
+    // Maintain root scenarioData if first forum or legacy
+    if (rooms[idx].scenarioData && (rooms[idx].forums?.[0]?.id === forumId || !rooms[idx].forums)) {
+      rooms[idx].scenarioData = scenarioData;
+    }
+
+    this.saveRooms(rooms);
+    try {
+      updateDoc(doc(db, 'rooms', roomId), { 
+        forums: rooms[idx].forums,
+        scenarioData: rooms[idx].scenarioData 
+      }).catch(() => {});
+    } catch {}
+  },
+
+  cancelForumTopicSelection(roomId: string, forumId: string, userId: string) {
+    const rooms = this.getRooms();
+    const idx = rooms.findIndex(r => r.id === roomId);
+    if (idx === -1) return;
+
+    const forum = rooms[idx].forums?.find(f => f.id === forumId);
+    if (!forum) {
+      this.cancelTopicSelection(roomId, userId);
+      return;
+    }
+
+    const scenario = { ...forum.scenarioData };
+    if (scenario.expeditionTopics) {
+      scenario.expeditionTopics = scenario.expeditionTopics.map(t => ({
+        ...t,
+        selectedMembers: t.selectedMembers.filter(m => m.userId !== userId)
+      }));
+    }
+    if (scenario.clashProMembers) {
+      scenario.clashProMembers = scenario.clashProMembers.filter(m => m.userId !== userId);
+    }
+    if (scenario.clashContraMembers) {
+      scenario.clashContraMembers = scenario.clashContraMembers.filter(m => m.userId !== userId);
+    }
+    if (scenario.buzzStations) {
+      scenario.buzzStations = scenario.buzzStations.map(s => ({
+        ...s,
+        members: s.members.filter(m => m.userId !== userId)
+      }));
+    }
+
+    this.updateForumScenarioData(roomId, forumId, scenario);
+  },
+
+  removeMemberFromForumTopic(roomId: string, forumId: string, topicId: string, userId: string) {
+    const rooms = this.getRooms();
+    const idx = rooms.findIndex(r => r.id === roomId);
+    if (idx === -1) return;
+
+    const forum = rooms[idx].forums?.find(f => f.id === forumId);
+    if (!forum) {
+      this.removeMemberFromTopic(roomId, topicId, userId);
+      return;
+    }
+
+    const scenario = { ...forum.scenarioData };
+    if (scenario.expeditionTopics) {
+      scenario.expeditionTopics = scenario.expeditionTopics.map(t => {
+        if (t.id === topicId) {
+          return {
+            ...t,
+            selectedMembers: t.selectedMembers.filter(m => m.userId !== userId)
+          };
+        }
+        return t;
+      });
+    }
+
+    this.updateForumScenarioData(roomId, forumId, scenario);
+  },
+
+  updateForumTopicCapacity(roomId: string, forumId: string, topicId: string, maxQuota: number, offlineQuota: number, onlineQuota: number) {
+    const rooms = this.getRooms();
+    const idx = rooms.findIndex(r => r.id === roomId);
+    if (idx === -1) return;
+
+    const forum = rooms[idx].forums?.find(f => f.id === forumId);
+    if (!forum || !forum.scenarioData?.expeditionTopics) {
+      this.updateTopicCapacity(roomId, topicId, maxQuota, offlineQuota, onlineQuota);
+      return;
+    }
+
+    const topics = forum.scenarioData.expeditionTopics;
+    const tIdx = topics.findIndex(t => t.id === topicId);
+    if (tIdx !== -1) {
+      const updatedTopics = [...topics];
+      updatedTopics[tIdx] = {
+        ...updatedTopics[tIdx],
+        maxQuota,
+        offlineQuota,
+        onlineQuota
+      };
+
+      this.updateForumScenarioData(roomId, forumId, {
+        ...forum.scenarioData,
+        expeditionTopics: updatedTopics
+      });
+    }
   }
 };

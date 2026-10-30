@@ -58,6 +58,23 @@ export interface Bookmark {
 
 export type ScenarioType = 'expedition' | 'clash' | 'buzz';
 
+export type JenjangType = 'SD' | 'SMP' | 'SMA/SMK' | 'Perguruan Tinggi' | 'Umum';
+
+export interface RoomForum {
+  id: string;
+  roomId: string;
+  title: string;
+  description: string;
+  scenarioType: ScenarioType;
+  scenarioData: RoomScenarioData;
+  createdAt: string;
+  updatedAt?: string;
+  authorId: string;
+  authorName: string;
+  isActive: boolean;
+  targetObjective?: string;
+}
+
 export interface CourseMaterial {
   id: string;
   title: string;
@@ -176,6 +193,7 @@ export interface RoomScenarioData {
 export interface CourseRoom {
   id: string;
   name: string;
+  jenjang?: JenjangType | string;
   section: string;
   subject: string;
   roomCode: string; // 6-digit or formatted code e.g. "EXP890"
@@ -184,7 +202,8 @@ export interface CourseRoom {
   teacherAvatar?: string;
   description: string;
   bannerGradient: string;
-  discussionScenario: ScenarioType;
+  discussionScenario?: ScenarioType; // Legacy fallback
+  forums?: RoomForum[]; // Multiple forums per room
   members: string[]; // User IDs who joined
   memberProfiles?: Array<{
     uid: string;
@@ -194,6 +213,6 @@ export interface CourseRoom {
   }>;
   materials: CourseMaterial[];
   assignments: Assignment[];
-  scenarioData: RoomScenarioData;
+  scenarioData?: RoomScenarioData; // Legacy fallback
   createdAt: string;
 }

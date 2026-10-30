@@ -12,11 +12,12 @@ import {
   UploadCloud, 
   ArrowRight, 
   LogOut, 
-  Sparkles,
-  BookOpen,
-  Search,
-  CheckCircle2,
-  PackageCheck
+  Sparkles, 
+  BookOpen, 
+  Search, 
+  CheckCircle2, 
+  PackageCheck,
+  Layers 
 } from 'lucide-react';
 
 interface RoomListViewProps {
@@ -38,19 +39,20 @@ export const RoomListView: React.FC<RoomListViewProps> = ({
   const isAdmin = currentUser?.isAdmin || currentUser?.role === 'admin' || currentUser?.role === 'lecturer';
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterScenario, setFilterScenario] = useState<'all' | ScenarioType>('all');
+  const [filterJenjang, setFilterJenjang] = useState<string>('all');
 
   const myRooms = rooms.filter(r => r.members.includes(currentUser?.uid || ''));
 
   const filteredRooms = (myRooms.length > 0 ? myRooms : rooms).filter(r => {
-    if (filterScenario !== 'all' && r.discussionScenario !== filterScenario) return false;
+    if (filterJenjang !== 'all' && (r.jenjang || 'Perguruan Tinggi') !== filterJenjang) return false;
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       const matchName = r.name.toLowerCase().includes(q);
       const matchCode = r.roomCode.toLowerCase().includes(q);
       const matchSubject = r.subject.toLowerCase().includes(q);
       const matchTeacher = r.teacherName.toLowerCase().includes(q);
-      if (!matchName && !matchCode && !matchSubject && !matchTeacher) return false;
+      const matchJenjang = (r.jenjang || '').toLowerCase().includes(q);
+      if (!matchName && !matchCode && !matchSubject && !matchTeacher && !matchJenjang) return false;
     }
     return true;
   });
@@ -228,59 +230,30 @@ export const RoomListView: React.FC<RoomListViewProps> = ({
           </div>
         </div>
 
-        {/* Filter Pills */}
+        {/* Filter Pills by Jenjang Pendidikan */}
         <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b-2 border-slate-200/60">
           <div className="flex items-center gap-2 overflow-x-auto text-xs sm:text-sm font-bold">
-            <button
-              type="button"
-              onClick={() => setFilterScenario('all')}
-              className={`px-4 py-2 rounded-2xl border-2 transition-all cursor-pointer ${
-                filterScenario === 'all'
-                  ? 'bg-rose-500 text-white border-rose-600 shadow-xs'
-                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
-              }`}
-            >
-              Semua Ruang ({filteredRooms.length})
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setFilterScenario('expedition')}
-              className={`px-4 py-2 rounded-2xl border-2 transition-all cursor-pointer flex items-center gap-2 ${
-                filterScenario === 'expedition'
-                  ? 'bg-amber-500 text-slate-950 border-amber-600 shadow-xs'
-                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
-              }`}
-            >
-              <Compass className="w-4 h-4 text-amber-600" />
-              <span>Model Ekspedisi</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setFilterScenario('clash')}
-              className={`px-4 py-2 rounded-2xl border-2 transition-all cursor-pointer flex items-center gap-2 ${
-                filterScenario === 'clash'
-                  ? 'bg-indigo-600 text-white border-indigo-700 shadow-xs'
-                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
-              }`}
-            >
-              <Swords className="w-4 h-4 text-indigo-400" />
-              <span>Model Debat Clash</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setFilterScenario('buzz')}
-              className={`px-4 py-2 rounded-2xl border-2 transition-all cursor-pointer flex items-center gap-2 ${
-                filterScenario === 'buzz'
-                  ? 'bg-cyan-600 text-white border-cyan-700 shadow-xs'
-                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
-              }`}
-            >
-              <Flame className="w-4 h-4 text-cyan-400" />
-              <span>Model Buzz Chamber</span>
-            </button>
+            {[
+              { id: 'all', label: 'Semua Jenjang' },
+              { id: 'Perguruan Tinggi', label: 'Perguruan Tinggi' },
+              { id: 'SMA/SMK', label: 'SMA / SMK' },
+              { id: 'SMP', label: 'SMP / MTs' },
+              { id: 'SD', label: 'SD / MI' },
+              { id: 'Umum', label: 'Umum' }
+            ].map(p => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => setFilterJenjang(p.id)}
+                className={`px-4 py-2 rounded-2xl border-2 transition-all cursor-pointer whitespace-nowrap ${
+                  filterJenjang === p.id
+                    ? 'bg-[#FF5B37] text-white border-[#E84E2C] shadow-xs'
+                    : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
           </div>
 
           <span className="text-xs sm:text-sm font-bold text-slate-500 hidden sm:inline">
@@ -291,7 +264,7 @@ export const RoomListView: React.FC<RoomListViewProps> = ({
         {/* Empty state: If user has no rooms */}
         {myRooms.length === 0 && (
           <div className="p-10 sm:p-14 rounded-3xl bg-white border-2 border-slate-200 text-center space-y-4 shadow-sm">
-            <div className="w-16 h-16 rounded-3xl bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
+            <div className="w-16 h-16 rounded-3xl bg-[#FFEDE7] text-[#FF5B37] flex items-center justify-center mx-auto">
               <BookOpen className="w-8 h-8" />
             </div>
             <div className="max-w-md mx-auto space-y-1">
@@ -305,7 +278,7 @@ export const RoomListView: React.FC<RoomListViewProps> = ({
             <button
               type="button"
               onClick={onOpenJoinModal}
-              className="py-3 px-6 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-sm shadow-md transition-all cursor-pointer inline-flex items-center gap-2"
+              className="py-3 px-6 rounded-2xl bg-[#FF5B37] hover:bg-[#E84E2C] text-white font-bold text-sm shadow-md transition-all cursor-pointer inline-flex items-center gap-2"
             >
               <KeyRound className="w-4 h-4" />
               <span>Gabung Kelas dengan Kode</span>
@@ -316,22 +289,21 @@ export const RoomListView: React.FC<RoomListViewProps> = ({
         {/* Google Classroom Grid Cards (ToyStore Retail Style) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredRooms.map((room, idx) => {
-            const scInfo = getScenarioInfo(room.discussionScenario);
-            const ScIcon = scInfo.icon;
             const headerColor = getCardHeaderColor(idx);
+            const forumCount = room.forums?.length || 1;
 
             return (
               <div
                 key={room.id}
                 onClick={() => onSelectRoom(room)}
-                className="group rounded-3xl bg-white border-2 border-slate-200/90 hover:border-rose-400 hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col justify-between cursor-pointer"
+                className="group rounded-3xl bg-white border-2 border-slate-200/90 hover:border-[#FF5B37]/60 hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col justify-between cursor-pointer"
               >
                 {/* Classroom Header Banner */}
                 <div className={`p-6 sm:p-7 ${headerColor} relative space-y-2.5`}>
                   <div className="flex items-center justify-between">
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-white/20 backdrop-blur-md text-white border border-white/30">
-                      <ScIcon className="w-3.5 h-3.5" />
-                      <span>{scInfo.label}</span>
+                      <GraduationCap className="w-3.5 h-3.5" />
+                      <span>{room.jenjang || 'Perguruan Tinggi'}</span>
                     </span>
                     <span className="font-mono text-xs px-2.5 py-1 rounded-xl bg-black/30 text-white font-bold border border-white/20">
                       {room.roomCode}
@@ -348,7 +320,7 @@ export const RoomListView: React.FC<RoomListViewProps> = ({
 
                   <div className="pt-2 text-xs sm:text-sm text-white/95 flex items-center justify-between border-t border-white/20 font-medium">
                     <span>Pengampu: {room.teacherName}</span>
-                    <span className="text-xs">{room.subject}</span>
+                    <span className="text-xs bg-white/20 px-2 py-0.5 rounded-md font-bold">{room.subject}</span>
                   </div>
                 </div>
 
@@ -358,6 +330,12 @@ export const RoomListView: React.FC<RoomListViewProps> = ({
                     {room.description}
                   </p>
 
+                  {/* Multi-Forum indicator */}
+                  <div className="p-3 rounded-2xl bg-[#FAF8F5] border border-[#EFE9E1] flex items-center gap-2 text-xs font-bold text-slate-700">
+                    <Layers className="w-4 h-4 text-[#FF5B37]" />
+                    <span>{forumCount} Forum Diskusi Interaktif</span>
+                  </div>
+
                   {/* Metrics Bar */}
                   <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs sm:text-sm font-bold text-slate-600">
                     <div className="flex items-center gap-1.5">
@@ -366,11 +344,11 @@ export const RoomListView: React.FC<RoomListViewProps> = ({
                     </div>
 
                     <div className="flex items-center gap-1.5">
-                      <UploadCloud className="w-4 h-4 text-rose-500" />
+                      <UploadCloud className="w-4 h-4 text-[#FF5B37]" />
                       <span>{room.assignments.length} Tugas</span>
                     </div>
 
-                    <span className="text-rose-500 font-extrabold group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
+                    <span className="text-[#FF5B37] font-extrabold group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
                       <span>Buka Room</span>
                       <ArrowRight className="w-4 h-4" />
                     </span>

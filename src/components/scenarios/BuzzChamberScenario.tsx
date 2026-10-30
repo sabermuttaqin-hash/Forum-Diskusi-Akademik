@@ -16,16 +16,34 @@ import {
 
 interface BuzzChamberScenarioProps {
   room: CourseRoom;
+  forumId?: string;
+  forumTitle?: string;
+  scenarioData?: any;
   onUpdateRoom?: () => void;
 }
 
-export const BuzzChamberScenario: React.FC<BuzzChamberScenarioProps> = ({ room, onUpdateRoom }) => {
+export const BuzzChamberScenario: React.FC<BuzzChamberScenarioProps> = ({ 
+  room, 
+  forumId, 
+  forumTitle, 
+  scenarioData: propScenarioData, 
+  onUpdateRoom 
+}) => {
   const { currentUser } = useAuth();
   const isAdmin = currentUser?.isAdmin || currentUser?.uid === room.teacherId;
 
-  const scenario = room.scenarioData;
+  const scenario = propScenarioData || room.scenarioData || { type: 'buzz' };
   const stations: BuzzStation[] = scenario.buzzStations || [];
   const ideas: BuzzIdea[] = scenario.buzzIdeas || [];
+
+  const saveScenario = (updated: any) => {
+    if (forumId) {
+      roomsService.updateForumScenarioData(room.id, forumId, updated);
+    } else {
+      roomsService.updateScenarioData(room.id, updated);
+    }
+    if (onUpdateRoom) onUpdateRoom();
+  };
 
   const [phase, setPhase] = useState<'ideation' | 'synthesis' | 'showcase' | 'idle'>(scenario.buzzPhase || 'ideation');
   const [timeLeft, setTimeLeft] = useState<number>(scenario.buzzTimeRemaining ?? 300);
@@ -112,13 +130,12 @@ export const BuzzChamberScenario: React.FC<BuzzChamberScenarioProps> = ({ room, 
     };
 
     const updatedIdeas = [newIdea, ...ideas];
-    roomsService.updateScenarioData(room.id, {
+    saveScenario({
       ...scenario,
       buzzIdeas: updatedIdeas
     });
 
     setNewIdeaText('');
-    if (onUpdateRoom) onUpdateRoom();
   };
 
   const handleSaveSynthesis = (stationId: string) => {
@@ -134,13 +151,12 @@ export const BuzzChamberScenario: React.FC<BuzzChamberScenarioProps> = ({ room, 
       return s;
     });
 
-    roomsService.updateScenarioData(room.id, {
+    saveScenario({
       ...scenario,
       buzzStations: updatedStations
     });
 
     setSynthesisInput('');
-    if (onUpdateRoom) onUpdateRoom();
   };
 
   const selectedStation = stations.find(s => s.id === selectedStationId);

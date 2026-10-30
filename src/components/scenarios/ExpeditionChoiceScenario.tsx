@@ -26,14 +26,24 @@ import {
 
 interface ExpeditionChoiceScenarioProps {
   room: CourseRoom;
+  forumId?: string;
+  forumTitle?: string;
+  scenarioData?: any;
   onUpdateRoom?: () => void;
 }
 
-export const ExpeditionChoiceScenario: React.FC<ExpeditionChoiceScenarioProps> = ({ room, onUpdateRoom }) => {
+export const ExpeditionChoiceScenario: React.FC<ExpeditionChoiceScenarioProps> = ({ 
+  room, 
+  forumId, 
+  forumTitle, 
+  scenarioData: propScenarioData, 
+  onUpdateRoom 
+}) => {
   const { currentUser } = useAuth();
   const isAdmin = currentUser?.isAdmin || currentUser?.uid === room.teacherId || currentUser?.role === 'admin' || currentUser?.role === 'lecturer';
 
-  const topics: ExpeditionTopic[] = room.scenarioData.expeditionTopics || [];
+  const effectiveScenarioData = propScenarioData || room.scenarioData || { type: 'expedition' };
+  const topics: ExpeditionTopic[] = effectiveScenarioData.expeditionTopics || [];
 
   // Attendance choice state
   const [myAttendance, setMyAttendance] = useState<'offline' | 'online'>('offline');
@@ -90,17 +100,30 @@ export const ExpeditionChoiceScenario: React.FC<ExpeditionChoiceScenarioProps> =
       };
     });
 
-    roomsService.updateScenarioData(room.id, {
-      ...room.scenarioData,
-      expeditionTopics: updatedTopics
-    });
-    if (onUpdateRoom) onUpdateRoom();
+    const persistScenario = (newTopics: ExpeditionTopic[]) => {
+      const updated = {
+        ...effectiveScenarioData,
+        expeditionTopics: newTopics
+      };
+      if (forumId) {
+        roomsService.updateForumScenarioData(room.id, forumId, updated);
+      } else {
+        roomsService.updateScenarioData(room.id, updated);
+      }
+      if (onUpdateRoom) onUpdateRoom();
+    };
+
+    persistScenario(updatedTopics);
   };
 
   // CANCEL TOPIC (Guru / Siswa bisa membatalkan pilihan tema kapan saja)
   const handleCancelMyTopic = () => {
     if (!currentUser) return;
-    roomsService.cancelTopicSelection(room.id, currentUser.uid);
+    if (forumId) {
+      roomsService.cancelForumTopicSelection(room.id, forumId, currentUser.uid);
+    } else {
+      roomsService.cancelTopicSelection(room.id, currentUser.uid);
+    }
     if (selectedTopicToStudy && selectedTopicToStudy.id === myTopic?.id) {
       setSelectedTopicToStudy(null);
     }
@@ -111,7 +134,11 @@ export const ExpeditionChoiceScenario: React.FC<ExpeditionChoiceScenarioProps> =
   const handleRemoveMemberFromTopic = (topicId: string, memberUid: string, memberName: string) => {
     if (!isAdmin) return;
     if (window.confirm(`Keluarkan ${memberName} dari tema ini agar dapat memilih ulang?`)) {
-      roomsService.removeMemberFromTopic(room.id, topicId, memberUid);
+      if (forumId) {
+        roomsService.removeMemberFromForumTopic(room.id, forumId, topicId, memberUid);
+      } else {
+        roomsService.removeMemberFromTopic(room.id, topicId, memberUid);
+      }
       if (onUpdateRoom) onUpdateRoom();
     }
   };
@@ -124,10 +151,15 @@ export const ExpeditionChoiceScenario: React.FC<ExpeditionChoiceScenarioProps> =
         ...t,
         selectedMembers: []
       }));
-      roomsService.updateScenarioData(room.id, {
-        ...room.scenarioData,
+      const updated = {
+        ...effectiveScenarioData,
         expeditionTopics: resetTopics
-      });
+      };
+      if (forumId) {
+        roomsService.updateForumScenarioData(room.id, forumId, updated);
+      } else {
+        roomsService.updateScenarioData(room.id, updated);
+      }
       if (onUpdateRoom) onUpdateRoom();
     }
   };
@@ -145,10 +177,16 @@ export const ExpeditionChoiceScenario: React.FC<ExpeditionChoiceScenarioProps> =
       return t;
     });
 
-    roomsService.updateScenarioData(room.id, {
-      ...room.scenarioData,
+    const updated = {
+      ...effectiveScenarioData,
       expeditionTopics: updatedTopics
-    });
+    };
+    if (forumId) {
+      roomsService.updateForumScenarioData(room.id, forumId, updated);
+    } else {
+      roomsService.updateScenarioData(room.id, updated);
+    }
+
     setWorksheetDraft('');
     if (selectedTopicToStudy && selectedTopicToStudy.id === topicId) {
       setSelectedTopicToStudy({
@@ -174,10 +212,15 @@ export const ExpeditionChoiceScenario: React.FC<ExpeditionChoiceScenarioProps> =
       return t;
     });
 
-    roomsService.updateScenarioData(room.id, {
-      ...room.scenarioData,
+    const updated = {
+      ...effectiveScenarioData,
       expeditionTopics: updatedTopics
-    });
+    };
+    if (forumId) {
+      roomsService.updateForumScenarioData(room.id, forumId, updated);
+    } else {
+      roomsService.updateScenarioData(room.id, updated);
+    }
     setIsEditingCapacity(false);
     if (onUpdateRoom) onUpdateRoom();
   };
